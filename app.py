@@ -5,6 +5,10 @@ app = Flask(__name__,
 	static_folder='static'
 )
 
+
+app.config.from_pyfile('config.py')
+
+
 @app.route('/', methods = ["GET"])
 def home():
     return render_template("home.html")
