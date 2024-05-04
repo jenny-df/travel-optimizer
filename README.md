@@ -10,7 +10,7 @@
   - Download the requirements for the code: `pip3 install -r requirements.txt`
   - Create a configuration file for the secret keys called config.py and add the necessary keys (update if changed):
     - SECRET_KEY="<KEY>"
-  - Create a .gitignore file and add two lines to it:
+  - Create a .gitignore file (if it doesn't exist) and add two lines to it:
     - env/
     - config.py
 - Start the website: `python3 app.py`
