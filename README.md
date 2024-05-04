@@ -16,3 +16,9 @@
 - Start the website: `python3 app.py`
 - Open the website (hosted locally). The link should be http://127.0.0.1:5000 or http://localhost:5000. The terminal will tell you which one it is.
 - If you make any change, it will be reflected on the website when you refresh the page. If you made a change in the CSS or JS code, it might not be reflected immediately because of cookies and cashing; you'll have to do a hard refresh of the page or open it from another browser to see the changes.
+
+## Sidenotes:
+
+1. If you make a change to the configurations, please add the generic name of the variable above.
+2. If any major change is made please update the README.
+3. If you pip install any packages that everyone should have, make sure only relevant stuff is downloaded (AND everything currently in the requirements.txt file) and then run pip freeze > requirements.txt to reflect the changes for everyone.

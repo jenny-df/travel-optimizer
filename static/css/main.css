@@ -1,40 +1,72 @@
-td,
-th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
-}
-
-.bonus {
-  accent-color: red;
-  outline: 1px solid red;
-}
-
-.extras {
-  accent-color: blue;
-  outline: 1px solid blue;
-}
-
-.advanced {
-  accent-color: green;
-  outline: 1px solid green;
+:root {
+  --main-blue: #3881b2;
+  --input-gray: rgb(235, 232, 232);
 }
 
 .center_us {
   text-align: center;
 }
 
-.center_table {
+.btn-special-blue {
+  color: #fff;
+  background-color: var(--main-blue);
+  border-color: var(--main-blue);
+}
+
+#data-form {
+  margin-bottom: 5vh;
+}
+
+input,
+textarea,
+select {
+  width: 45vw;
+  background-color: var(--input-gray);
+  border-color: transparent;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+textarea {
+  min-height: 20vh;
+}
+
+form > div {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.slider {
+  background: var(--input-gray);
+  opacity: 0.7;
+  width: 45vw;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb,
+.slider::-moz-range-thumb {
+  background: var(--main-blue);
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+#sliderValue {
+  font-weight: bold;
+  display: relative;
+}
+.min-max-values {
+  width: 45vw;
   margin-left: auto;
   margin-right: auto;
 }
 
-.btn-special-blue {
-  color: #fff;
-  background-color: #3881b2;
-  border-color: #3881b2;
+#min {
+  float: left;
 }
 
-.white-nav-link {
-  color: #fff !important;
+#max {
+  float: right;
 }
