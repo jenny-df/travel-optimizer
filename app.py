@@ -22,10 +22,9 @@ def data():
 @app.route('/results', methods = ["POST"])
 def results():
     # Getting values from the form
-    val1 = request.form['val1']
-    val2 = request.form['val2']
-    val3 = request.form['val3']
-    val4 = request.form['val4']
+    data = dict(request.form)
+    del data['Submit']
+    data['locations'] = data['locations'].split('\n')
 
 	# <TODO> Call to classifier 
     classifier_output = None

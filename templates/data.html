@@ -1,6 +1,67 @@
 {% extends "layouts/base.html" %} {% set title %}Data{% endset %} {% set style
 %}main.css{% endset %} {% block body %}
-<div class="center_us">
+<div class="center_us" id="data-form">
   <h1>Enter your data here!</h1>
+  <form action="/results" method="POST">
+    <div>
+      <label for="locations">Enter the destinations (one per line):</label>
+      <br />
+      <textarea name="locations" required></textarea>
+      <br />
+    </div>
+
+    <div>
+      <label for="transport">Select the transportation mode:</label>
+      <br />
+      <select name="transport" required>
+        <option value="" disabled selected>--select--</option>
+        <option value="bus">Bus</option>
+        <option value="car">Car</option>
+        <option value="bike">Bike</option>
+        <option value="walking">Walking</option>
+      </select>
+      <br />
+    </div>
+
+    <div>
+      <label for="departure">Select departure date:</label>
+      <br />
+      <input type="date" name="departureDate" id="departureDate" required />
+      <br />
+    </div>
+    <div>
+      <label for="time">Select departure time:</label>
+      <br />
+      <input type="time" name="departureTime" id="departureTime" required />
+      <br />
+    </div>
+    <div>
+      <label for="numDays"
+        >Number of days travelling: <span id="sliderValue">0 Days</span></label
+      >
+      <br />
+      <div id="slide-wrapper">
+        <input
+          type="range"
+          min="1"
+          max="10"
+          value="5"
+          class="slider"
+          id="myRange"
+          name="numDays"
+          required
+        />
+
+        <div class="min-max-values">
+          <span id="min">0</span>
+          <span id="max">10</span>
+        </div>
+      </div>
+      <br />
+    </div>
+
+    <input type="submit" name="Submit" />
+  </form>
+  <script src="/static/js/main.js"></script>
 </div>
 {% endblock %}
