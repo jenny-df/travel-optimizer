@@ -146,6 +146,17 @@ def clean_data(place_details):
     # Place ID
     formatted_details['place_id'] = place_id
 
+    # Photos
+    photos = place_details.get('photos', None)
+    if photos:
+        main_photo = photos[0]
+        photo_reference = main_photo.get('photo_reference', None)
+        height = main_photo.get('height', None)
+        width = main_photo.get('width', None)
+        insert_photos(place_id, photo_reference, height, width)
+    else:
+        insert_photos(place_id, None, None, None)
+
     return formatted_details
     
 def insert_city(city):
@@ -201,6 +212,20 @@ def insert_time(place_id, opening_hours):
     conn.commit()
     conn.close()
 
+def insert_photos(place_id, photo_reference, height, width):
+    '''
+    Inserts photos into the database
+    '''
+    conn = sqlite3.connect('Databases/travel.db')
+    cursor = conn.cursor()
+
+    # Insert the photo into the database
+    sql_command = "INSERT INTO photos (photo_reference, height, width, place_id) VALUES (?, ?, ?, ?)"
+    cursor.execute(sql_command, (photo_reference, height, width, place_id))
+    
+    conn.commit()
+    conn.close()
+
 def get_tourist_attractions(city):
     '''
     Returns a list of tourist attractions in a city
@@ -245,13 +270,8 @@ def get_tourist_attractions(city):
         place_id = place['place_id']
         place_details = gmaps.place(place_id = place_id, fields = fields)['result']
         
-        
         # Clean the place details
         place_details = clean_data(place_details)
-
-        #print()
-        #print(place_details)
-        #print()
 
         # Add place details to the list
         tourist_attractions.append(place_details)
@@ -264,6 +284,5 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    city = 'Paris'
+    city = 'Los Angeles'
     attractions = get_tourist_attractions(city)
-    print(len(attractions))
