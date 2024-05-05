@@ -2,6 +2,7 @@ import googlemaps
 import os
 from dotenv import load_dotenv
 import re
+import time
 
 import sqlite3
 
@@ -35,29 +36,38 @@ def to_24_hour(time_unicode):
 
     # Parse format 10:00 AM - 5:00 PM
     # Split the string into opening and closing times
-    opening_time, closing_time = re.split(r'\s*–\s*', time_unicode)
 
-    # Split the opening and closing times into hours and minutes
-    opening_hour, opening_minute = opening_time.split(':')
-    closing_hour, closing_minute = closing_time.split(':')
+    # Split by commas, if multiple open close times
+    multiple_times = time_unicode.split(',')
+    answers = []
+    for times in multiple_times:
+        split_time = times.split(', ')[0]
 
-    # Convert the opening and closing times to 24-hour format
-    opening_hour = int(opening_hour)
-    closing_hour = int(closing_hour)
+        opening_time, closing_time = re.split(r'\s*–\s*', split_time)
 
-    # Convert minutes to integers
-    opening_minute = opening_minute.replace('AM', '').replace('PM', '')
-    closing_minute = closing_minute.replace('AM', '').replace('PM', '')
-    opening_minute = int(opening_minute)
-    closing_minute = int(closing_minute)
+        # Split the opening and closing times into hours and minutes
+        opening_hour, opening_minute = opening_time.split(':')
+        closing_hour, closing_minute = closing_time.split(':')
 
-    # Convert AM/PM to 24-hour format
-    if 'PM' in opening_time and opening_hour != 12:
-        opening_hour += 12
-    if 'PM' in closing_time and closing_hour != 12:
-        closing_hour += 12
+        # Convert the opening and closing times to 24-hour format
+        opening_hour = int(opening_hour)
+        closing_hour = int(closing_hour)
+
+        # Convert minutes to integers
+        opening_minute = opening_minute.replace('AM', '').replace('PM', '')
+        closing_minute = closing_minute.replace('AM', '').replace('PM', '')
+        opening_minute = int(opening_minute)
+        closing_minute = int(closing_minute)
+
+        # Convert AM/PM to 24-hour format
+        if 'PM' in opening_time and opening_hour != 12:
+            opening_hour += 12
+        if 'PM' in closing_time and closing_hour != 12:
+            closing_hour += 12
+        
+        answers.append((opening_hour, opening_minute, closing_hour, closing_minute))
     
-    return opening_hour, opening_minute, closing_hour, closing_minute
+    return answers
 
 def city_exists(city):
     '''
@@ -91,14 +101,7 @@ def clean_data(place_details):
     # Extract Monday to Sunday opening hours
     opening_hours = place_details.get('opening_hours', None)
 
-    # Create an empty Monday to Sunday dictionary
-    formatted_time = {'Monday': (None, None, None, None), 
-                      'Tuesday': (None, None, None, None), 
-                      'Wednesday': (None, None, None, None), 
-                      'Thursday': (None, None, None, None), 
-                      'Friday': (None, None, None, None), 
-                      'Saturday': (None, None, None, None), 
-                      'Sunday': (None, None, None, None)}
+    # Create entries for each day of the week
     if opening_hours:
         days = opening_hours.get('weekday_text', None)
         if days:
@@ -106,16 +109,21 @@ def clean_data(place_details):
                 day, hours = day.split(': ')
                 
                 if hours == 'Closed':
-                    formatted_time[day] = (0, 0, 0, 0)
+                    insert_time(place_id, {day: (0, 0, 0, 0)})
                     continue
 
                 if hours == 'Open 24 hours':
-                    formatted_time[day] = (0, 0, 23, 59)
+                    insert_time(place_id, {day: (0, 0, 23, 59)})
                     continue
 
                 # Extract opening and closing times
-                formatted_time[day] = to_24_hour(hours)    
-    insert_time(place_id, formatted_time)
+                answers = to_24_hour(hours)
+                for answer in answers:
+                    insert_time(place_id, {day: answer})
+    else:
+        # Insert None values for all days of the week
+        for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']:
+            insert_time(place_id, {day: (None, None, None, None)})
 
     # Geometry
     geometry = place_details.get('geometry', None)
@@ -256,25 +264,39 @@ def get_tourist_attractions(city):
     # Define parameters for nearby search
     params = {
         'location': (city_location['lat'], city_location['lng']),
-        'radius': 50000,  # 5000 meters (adjust as needed)
+        'radius': 100000,  # 100 kilometers (adjust as needed)
         'type': 'tourist_attraction'
     }
 
-    # Perform nearby search
-    places = gmaps.places_nearby(**params)
-
-    # Extract and return information about tourist attractions
     tourist_attractions = []
-    for place in places['results']:
-        # Get place details
-        place_id = place['place_id']
-        place_details = gmaps.place(place_id = place_id, fields = fields)['result']
-        
-        # Clean the place details
-        place_details = clean_data(place_details)
 
-        # Add place details to the list
-        tourist_attractions.append(place_details)
+    max_iteration = 10 # Adjust in the future
+    iteration = 0
+
+    while iteration < max_iteration:
+        # Perform nearby search
+        places = gmaps.places_nearby(**params)
+
+        # Extract and return information about tourist attractions
+        for place in places['results']:
+            # Get place details
+            place_id = place['place_id']
+            place_details = gmaps.place(place_id = place_id, fields = fields)['result']
+            
+            # Clean the place details
+            place_details = clean_data(place_details)
+
+            # Add place details to the list
+            tourist_attractions.append(place_details)
+        
+        # Check if there are more results to fetch
+        if 'next_page_token' in places:
+            # Wait for a few seconds before making the next request
+            time.sleep(2)
+            params['page_token'] = places['next_page_token']
+            iteration += 1
+        else:
+            break
         
     # Insert the city and its places into the database
     city_id = insert_city(city)
@@ -284,5 +306,6 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    city = 'Los Angeles'
+    city = 'Las Vegas'
     attractions = get_tourist_attractions(city)
+    print(len(attractions))
