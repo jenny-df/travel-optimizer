@@ -2,7 +2,10 @@
   --main-blue: #3881b2;
   --input-gray: rgb(235, 232, 232);
 }
-
+.white-nav-link,
+.nav-item {
+  color: white;
+}
 .background-image {
   background-image: url("/static/images/travel1.jpg");
   height: 91vh;
