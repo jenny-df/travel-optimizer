@@ -28,13 +28,13 @@ def results():
     data['locations'] = data['locations'].split('\n')
 
 	# <TODO> Call to classifier 
-    classifier_output = None
+    clustering_output = [["1.1", "1.2", "1.3"], ["2.1", "2.2"], ["3.1"]]
     # <TODO> Call to optimized routing
-    optimized_route_output = None
+    optimized_route_output = [["1.1", "2.1", "3.1", "2.2"], ["1.2", "1.3"]]
 
     return render_template("results.html", 
-                        classifier = classifier_output, 
-                        optimized_route = optimized_route_output
+                        clusters = clustering_output, 
+                        routes = optimized_route_output
                         )
 
 
