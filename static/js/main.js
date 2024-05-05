@@ -16,3 +16,17 @@ now.setFullYear(now.getFullYear() + 3);
 var farFutureDate = now.toISOString().split("T")[0];
 document.getElementById("departureDate").setAttribute("min", currentDate);
 document.getElementById("departureDate").setAttribute("max", farFutureDate);
+
+// Loading the Google Maps
+let map;
+
+async function initMap() {
+  const { Map } = await google.maps.importLibrary("maps");
+
+  map = new Map(document.getElementById("map"), {
+    center: { lat: -34.397, lng: 150.644 },
+    zoom: 8,
+  });
+}
+
+initMap();

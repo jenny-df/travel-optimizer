@@ -3,6 +3,35 @@
   --input-gray: rgb(235, 232, 232);
 }
 
+.background-image {
+  background-image: url("/static/images/travel1.jpg");
+  height: 91vh;
+  width: 100vw;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#pic-welcome {
+  color: white;
+  font-size: 20vh;
+  padding-top: 30vh;
+  text-shadow: 2px 2px 4px black;
+}
+
+#sub-welcome {
+  color: white;
+  text-shadow: 2px 2px 4px black;
+}
+
+.intro-text {
+  padding-top: 80px;
+  padding-bottom: 60px;
+  width: 60vw;
+  margin: auto;
+  font-size: 19px;
+}
+
 .center_us {
   text-align: center;
 }
@@ -34,6 +63,18 @@ textarea {
 form > div {
   margin-top: 10px;
   margin-bottom: 20px;
+}
+form {
+  margin-bottom: 10px;
+}
+
+.form-btn {
+  width: 30vw;
+  background-color: var(--main-blue);
+  border-radius: 5px;
+  border-color: transparent;
+  color: white;
+  padding: 5px;
 }
 
 .slider {
