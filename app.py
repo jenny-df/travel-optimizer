@@ -16,7 +16,8 @@ def home():
 
 @app.route('/data', methods = ["GET"])
 def data():
-    return render_template("data.html")
+    google_key = "AIzaSyATeWwg3KcuetRkm1nV3xuOGAAZ6uXJNIU"
+    return render_template("data.html", google_key=google_key)
 
 
 @app.route('/results', methods = ["POST"])
