@@ -306,6 +306,6 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    city = 'Las Vegas'
+    city = 'San Francisco'
     attractions = get_tourist_attractions(city)
     print(len(attractions))
