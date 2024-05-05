@@ -22,3 +22,9 @@
 1. If you make a change to the configurations, please add the generic name of the variable above.
 2. If any major change is made please update the README.
 3. If you pip install any packages that everyone should have, make sure only relevant stuff is downloaded (AND everything currently in the requirements.txt file) and then run pip freeze > requirements.txt to reflect the changes for everyone.
+
+## Todo List:
+
+- [ ] Autocomplete for the locations
+- [ ] Show a google map on demand for locations entered in the Data page
+- [ ] Show a google map for the route outputs and clusters in the Results page
