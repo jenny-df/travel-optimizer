@@ -111,3 +111,32 @@ form {
 #max {
   float: right;
 }
+
+.result-sections {
+  width: 70vw;
+  margin: auto;
+  background-color: rgb(218, 218, 224);
+  border-radius: 10px;
+  margin-bottom: 10vh;
+  padding-bottom: 1px;
+  padding-top: 3vh;
+}
+
+.one-result {
+  margin-top: 3vh;
+  margin-bottom: 3vh;
+}
+
+.result-title {
+  font-size: 5vh;
+}
+
+.one-result > li {
+  list-style-type: square;
+  text-align: left;
+}
+.one-result > ul {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
