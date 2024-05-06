@@ -6,8 +6,7 @@ connection = sqlite3.connect("map.db")
 # cursor
 cursor = connection.cursor()
 
-# print statement will execute if there
-# are no errors
+# print statement to make sure there are no errors
 print("Connected to the database")
 
 # SQL command to create a table in the database
@@ -87,7 +86,7 @@ VALUES
 # execute the statement
 cursor.execute(sql_command)
 
-# execute the command to fetch all the data from the table distance
+# execute the command to fetch some location data from the table distance
 cursor.execute("""
                SELECT Location1, Location2, Location4, Location7, Location9
                FROM distance
@@ -100,12 +99,26 @@ ans = cursor.fetchall()
 # Create distance matrix which is a list of lists of ints
 distance_matrix = [[int(distance) for distance in individual_distances] for individual_distances in ans]
 
+# execute the command to fetch open and closing times data from the table map
+cursor.execute("""
+               SELECT OpenTime, CloseTime
+               FROM map
+               WHERE LocationID IN (1,2,4,7,9);
+               """)
+
+# store all the fetched data in the ans variable
+ans = cursor.fetchall()
+
+print(ans)
+
 # close the connection
 connection.close()
 
+quit()
+
 """Simple Vehicles Routing Problem (VRP)
 
-   Distances are in meters.
+   Distances in meters.
 """
 
 from ortools.constraint_solver import routing_enums_pb2
