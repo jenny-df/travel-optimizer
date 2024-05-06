@@ -1,6 +1,9 @@
 import sqlite3
 
 def create_cities_table():
+    '''
+    Creates a table to store which cities have already been scraped
+    '''
     conn = sqlite3.connect('travel.db')
     cursor = conn.cursor()
 
@@ -16,6 +19,9 @@ def create_cities_table():
     conn.close()
 
 def create_places_table():
+    '''
+    Creating a table to store the places that have already been scraped
+    '''
     conn = sqlite3.connect('travel.db')
     cursor = conn.cursor()
 
@@ -42,6 +48,9 @@ def create_places_table():
     conn.close()
 
 def create_time_table():
+    '''
+    Creating a table to store the opening and closing times of the places
+    '''
     conn = sqlite3.connect('travel.db')
     cursor = conn.cursor()
 
@@ -63,15 +72,18 @@ def create_time_table():
     conn.close()
 
 def create_photos_table():
+    '''
+    Creating a table to store the photos of the places
+    '''
     conn = sqlite3.connect('travel.db')
     cursor = conn.cursor()
 
     # Create the table with the required fields
-    sql_command = f"CREATE TABLE IF NOT EXISTS photos (     \
-                    id INTEGER PRIMARY KEY,                  \
-                    photo TEXT,                               \
-                    place_id INTEGER,                         \
-                    FOREIGN KEY (place_id) REFERENCES places(id) \
+    sql_command = f"CREATE TABLE IF NOT EXISTS photos (             \
+                    id INTEGER PRIMARY KEY,                         \
+                    photo TEXT,                                     \
+                    place_id INTEGER,                               \
+                    FOREIGN KEY (place_id) REFERENCES places(id)    \
                     )"
 
     # Execute the SQL command
