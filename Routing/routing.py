@@ -97,13 +97,11 @@ cursor.execute("""
 # store all the fetched data in the ans variable
 ans = cursor.fetchall()
 
-# Create distance matrix
-distance_matrix = [list(individual_distances) for individual_distances in ans]
+# Create distance matrix which is a list of lists of ints
+distance_matrix = [[int(distance) for distance in individual_distances] for individual_distances in ans]
 
 # close the connection
 connection.close()
-
-
 
 """Simple Vehicles Routing Problem (VRP)
 
