@@ -173,7 +173,7 @@ def main():
 
     # Create and register a transit callback.
     def time_callback(from_index, to_index):
-        """Returns the travel time between the two nodes."""
+        """Returns the travel time between the two nodes (set to hours)."""
         # Convert from routing variable Index to time matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
