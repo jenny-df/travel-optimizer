@@ -5,9 +5,27 @@
   <h1>Enter your data here!</h1>
   <form action="/results" method="POST">
     <div>
-      <label for="locations">Enter the destinations (one per line):</label>
+      <label for="locations"
+        >Enter the destinations you MUST go to (one per line):</label
+      >
       <br />
-      <textarea name="locations" id="location-input" required></textarea>
+      <textarea name="must_locations" id="location-input" required></textarea>
+      <br />
+    </div>
+
+    <div>
+      <label for="categories_of_locations"
+        >Select potential other types of places you would like to go to:</label
+      >
+      <br />
+      {% for category in categories %}
+      <input
+        type="checkbox"
+        name="categories_of_locations"
+        class="categories_of_locations"
+        value="{{category}}"
+      />{{category}}<br />
+      {% endfor %}
       <br />
     </div>
 
