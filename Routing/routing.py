@@ -114,7 +114,6 @@ print(ans)
 # close the connection
 connection.close()
 
-quit()
 
 """Simple Vehicles Routing Problem (VRP)
 
@@ -129,7 +128,7 @@ def create_data_model():
     """Stores the data for the problem."""
     data = {}
     data["distance_matrix"] = distance_matrix
-    data["num_vehicles"] = 1
+    data["num_vehicles"] = 2
     data["depot"] = 0
     return data
 
