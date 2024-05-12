@@ -122,7 +122,6 @@ from ortools.constraint_solver import pywrapcp
 
 # Create data model for VRP 
 def create_data_model():
-    """Stores the data for the problem."""
     data = {}
     data["time_matrix"] = distance_matrix
     data["time_windows"] = time_windows
@@ -130,9 +129,8 @@ def create_data_model():
     data["depot"] = 0
     return data
 
-
+# Prints solution in Terminal
 def print_solution(data, manager, routing, solution):
-    """Prints solution on console."""
     print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
     time_dimension = routing.GetDimensionOrDie("Time")
     total_time = 0
