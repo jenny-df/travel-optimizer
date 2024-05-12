@@ -43,7 +43,7 @@ def results():
                         routes = optimized_route_output
                         )
 
-@app.route('/scrape/<string:city_name>', methods = ["POST"])
+@app.route('/scrape/<string:city_name>', methods = ["GET"])
 def scrape(city_name):
     # CHANGE TO GET if you want to use this!
     try:

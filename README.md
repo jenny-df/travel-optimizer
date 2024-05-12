@@ -28,7 +28,7 @@
 
 ## Assumptions:
 
-- Users have 15 hours in a day available
+- Users have 15 hours in a day available: 9 hours of sleep. We don't account for food (users might input locations for that)
 - Users spend one hour in each location
 - No flights between locations
 
