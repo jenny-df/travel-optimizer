@@ -119,6 +119,12 @@ connection.close()
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
+# Create list of node numbers corresponding to must-see locations
+
+
+# Create list of node numbers corresponding to optional locations
+
+
 # Create data model for VRP 
 def create_data_model():
     data = {}
