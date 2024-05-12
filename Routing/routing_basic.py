@@ -1,3 +1,7 @@
+"""
+Standard Vehicle Routing problem with Time Windows
+"""
+
 import sqlite3
 
 # connecting to the database
