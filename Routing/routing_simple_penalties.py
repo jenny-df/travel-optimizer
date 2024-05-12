@@ -87,9 +87,9 @@ cursor.execute(sql_command)
 
 # execute the command to fetch some location data from the table distance
 cursor.execute("""
-               SELECT Location2, Location3, Location4
+               SELECT Location1, Location3, Location4
                FROM distance
-               WHERE LocationID IN (2,3,4);
+               WHERE LocationID IN (1,3,4);
                """)
 
 # store all the fetched data in the ans variable
@@ -102,7 +102,7 @@ distance_matrix = [[int(distance) for distance in individual_distances] for indi
 cursor.execute("""
                SELECT OpenTime, CloseTime
                FROM map
-               WHERE LocationID IN (2,3,4);
+               WHERE LocationID IN (1,3,4);
                """)
 
 # store all the fetched data in the ans variable
@@ -205,10 +205,12 @@ def main():
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
 
-    # Allow to drop nodes.
-    penalty = 1000
-    for node in range(1, len(data["time_matrix"])):
-        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
+    # Allow node dropping for locations that are optional
+    penalty = 10
+    routing.AddDisjunction([manager.NodeToIndex(0)], penalty)
+
+    # for node in range(1, len(data["time_matrix"])):
+    #     routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
 
     # Instantiate route start and end times to produce feasible times.
