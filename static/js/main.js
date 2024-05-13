@@ -7,8 +7,8 @@ var output = document.getElementById("sliderValue");
 output.innerHTML = slider.value + " Days";
 
 // When users move the slider the number of days changes
-slider.addEventListener("input", () => {
-  output.innerHTML = this.value + " Days";
+slider.addEventListener("input", (e) => {
+  output.innerHTML = e.target.value + " Days";
 });
 
 // Set up data-form's initial value for the date input

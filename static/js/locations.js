@@ -81,7 +81,7 @@ data_form.addEventListener("submit", (e) => {
   } else {
     // Otherwise, the data found will be put into hidden inputs so it can
     // reach the backend when the submission goes through after this.
-    all_locations.value = locs.join("$");
+    all_locations.value = locs.join("*");
     all_names.value = names.join("$");
     hotel.value = hotel.id;
   }
