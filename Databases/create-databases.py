@@ -10,7 +10,8 @@ def create_cities_table():
     # Create the table with the required fields
     sql_command = f"CREATE TABLE IF NOT EXISTS cities (     \
                     id INTEGER PRIMARY KEY,                 \
-                    name TEXT UNIQUE                        \
+                    name TEXT,                              \
+                    country TEXT                            \
                     )"
 
     # Execute the SQL command
@@ -62,7 +63,7 @@ def create_time_table():
                     open_minute INTEGER NULL,                       \
                     close_hour TEXT NULL,                           \
                     close_minute TEXT NULL,                         \
-                    place_id INTEGER,                               \
+                    place_id TEXT,                                  \
                     FOREIGN KEY (place_id) REFERENCES places(id)    \
                     )"
 
@@ -82,7 +83,7 @@ def create_photos_table():
     sql_command = f"CREATE TABLE IF NOT EXISTS photos (             \
                     id INTEGER PRIMARY KEY,                         \
                     photo TEXT,                                     \
-                    place_id INTEGER,                               \
+                    place_id TEXT,                                  \
                     FOREIGN KEY (place_id) REFERENCES places(id)    \
                     )"
 
@@ -101,7 +102,7 @@ def create_photos_table():
                     photo_reference TEXT NULL,                      \
                     height INTEGER NULL,                            \
                     width INTEGER NULL,                             \
-                    place_id INTEGER,                               \
+                    place_id TEXT,                                  \
                     FOREIGN KEY (place_id) REFERENCES places(id)    \
                     )"
 
@@ -111,8 +112,27 @@ def create_photos_table():
     conn.close()
 
 
+def create_category_table():
+    '''
+    Divides the categories column in the places table into a separate table
+    With each unique category as a one separate column
+    '''
+
+    conn = sqlite3.connect('travel.db')
+    cursor = conn.cursor()
+
+    # Create categories table with every field in categories as a column
+    create_table_query = "CREATE TABLE IF NOT EXISTS categories (place_id TEXT PRIMARY KEY, FOREIGN KEY (place_id) REFERENCES places(id))"
+    cursor.execute(create_table_query)
+
+    conn.commit()
+    conn.close()
+
+
+
 if __name__ == '__main__':
     create_cities_table()
     create_places_table()
     create_time_table()
     create_photos_table()
+    create_category_table()
