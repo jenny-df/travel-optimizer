@@ -30,3 +30,29 @@ async function initMap() {
 }
 
 initMap();
+
+window.addEventListener("load", (e) => {
+  var input = document.getElementById("location-input");
+  var autocomplete = new google.maps.places.Autocomplete(input);
+
+  autocomplete.addListener("place_changed", (e) => {
+    const place = autocomplete.getPlace();
+
+    const latitude = place.geometry.location.lat();
+    const longitude = place.geometry.location.lng();
+
+    const new_li = document.createElement("li");
+    new_li.className = "loc";
+    new_li.draggable = "true";
+    new_li.innerHTML = place.name;
+    new_li.id = latitude + "-" + longitude;
+    new_li.addEventListener("click", (e) => {
+      e.target.remove();
+    });
+
+    sortableList.appendChild(new_li);
+
+    input.value = "";
+    input.setCustomValidity("");
+  });
+});

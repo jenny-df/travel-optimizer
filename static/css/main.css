@@ -143,3 +143,53 @@ form {
   margin-left: auto;
   margin-right: auto;
 }
+
+.exclude_categories,
+.include_categories {
+  width: fit-content;
+  margin-right: 5px;
+}
+
+.include_categories {
+  accent-color: green;
+}
+
+.all-radios {
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sub-radios {
+  float: left;
+}
+
+.exclude_categories {
+  accent-color: red;
+}
+
+.loc {
+  margin-right: auto;
+  margin-left: auto;
+  width: fit-content;
+}
+
+.small-selects {
+  width: max-content;
+}
+
+.sortable-list {
+  margin-top: 2vh;
+}
+
+#sleepTime,
+#wakeTime,
+#departureDate,
+#departureTime {
+  width: max-content;
+  margin-right: 3vw;
+}
+
+label {
+  font-size: large;
+}
