@@ -33,10 +33,10 @@ initMap();
 
 window.addEventListener("load", (e) => {
   var input = document.getElementById("location-input");
-  var autocomplete = new google.maps.places.Autocomplete(input);
+  var input_autocomplete = new google.maps.places.Autocomplete(input);
 
-  autocomplete.addListener("place_changed", (e) => {
-    const place = autocomplete.getPlace();
+  input_autocomplete.addListener("place_changed", (e) => {
+    const place = input_autocomplete.getPlace();
 
     const latitude = place.geometry.location.lat();
     const longitude = place.geometry.location.lng();
@@ -45,7 +45,7 @@ window.addEventListener("load", (e) => {
     new_li.className = "loc";
     new_li.draggable = "true";
     new_li.innerHTML = place.name;
-    new_li.id = latitude + "-" + longitude;
+    new_li.id = latitude + "$" + longitude;
     new_li.addEventListener("click", (e) => {
       e.target.remove();
     });
@@ -54,5 +54,17 @@ window.addEventListener("load", (e) => {
 
     input.value = "";
     input.setCustomValidity("");
+  });
+
+  var hotel_input = document.getElementsByClassName("hotel")[0];
+  var hotel_autocomplete = new google.maps.places.Autocomplete(hotel_input);
+
+  hotel_autocomplete.addListener("place_changed", (e) => {
+    const place = input_autocomplete.getPlace();
+
+    const latitude = place.geometry.location.lat();
+    const longitude = place.geometry.location.lng();
+
+    hotel_input.id = latitude + "$" + longitude;
   });
 });

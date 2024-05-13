@@ -30,9 +30,9 @@ def results():
     data = dict(request.form)
     del data['Submit']
     del data['location_search']
-    data['must_locations'] = [tuple(info.split("--")) for info in data['must_locations'].split('$')]
+    data['must_locations'] = [tuple(info.split("$")) for info in data['must_locations'].split('$')]
     data['must_names'] = data['must_names'].split('$')
-    print(data)
+    data['hotel'] = tuple(data['hotel'].split("$"))
 
 	# <TODO> Audrey: Call to classifier 
     clustering_output = [["1.1", "1.2", "1.3"], ["2.1", "2.2"], ["3.1"]]

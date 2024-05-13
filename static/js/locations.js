@@ -63,7 +63,7 @@ data_form.addEventListener("submit", (e) => {
     locs.push(li_tag.id);
     names.push(li_tag.innerHTML);
   }
-  console.log(locs);
+
   if (locs.length == 0) {
     location_search.setCustomValidity("You haven't entered any location!");
     e.preventDefault();
@@ -71,6 +71,8 @@ data_form.addEventListener("submit", (e) => {
   } else {
     all_locations.value = locs.join("$");
     all_names.value = names.join("$");
+    var hotel = document.getElementsByClassName("hotel")[0];
+    hotel.value = hotel.id;
   }
 });
 
