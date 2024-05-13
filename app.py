@@ -34,6 +34,9 @@ def results():
     data['must_names'] = data['must_names'].split('$')
     data['hotel'] = tuple(data['hotel'].split("$"))
 
+    # Getting the required and optional locations based on data
+    required, optional = get_attractions_user_input(data)
+
 	# <TODO> Audrey: Call to classifier 
     clustering_output = [["1.1", "1.2", "1.3"], ["2.1", "2.2"], ["3.1"]]
     # <TODO> Audrey: Call to optimized routing
@@ -41,7 +44,9 @@ def results():
 
     return render_template("results.html", 
                         clusters = clustering_output, 
-                        routes = optimized_route_output
+                        routes = optimized_route_output,
+                        required = required,
+                        optional = optional
                         )
 
 
