@@ -61,8 +61,8 @@ def create_time_table():
                     day TEXT,                                       \
                     open_hour INTEGER NULL,                         \
                     open_minute INTEGER NULL,                       \
-                    close_hour TEXT NULL,                           \
-                    close_minute TEXT NULL,                         \
+                    close_hour INTEGER NULL,                           \
+                    close_minute INTEGER NULL,                         \
                     place_id TEXT,                                  \
                     FOREIGN KEY (place_id) REFERENCES places(id)    \
                     )"

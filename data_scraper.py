@@ -87,6 +87,11 @@ def clean_data(place_details):
     
     place_id = place_details['place_id']    
     formatted_details = {}
+    
+    time_details = []
+    photo_details = []
+    category_details = []
+
 
     # Name
     formatted_details['name'] = place_details.get('name', None)
@@ -109,21 +114,25 @@ def clean_data(place_details):
                 day, hours = day.split(': ')
                 
                 if hours == 'Closed':
-                    insert_time(place_id, {day: (0, 0, 0, 0)})
+                    time_details.append([place_id, {day: (0, 0, 0, 0)}])
+                    #insert_time(place_id, {day: (0, 0, 0, 0)})
                     continue
 
                 if hours == 'Open 24 hours':
-                    insert_time(place_id, {day: (0, 0, 23, 59)})
+                    time_details.append([place_id, {day: (0, 0, 23, 59)}])
+                    #insert_time(place_id, {day: (0, 0, 23, 59)})
                     continue
 
                 # Extract opening and closing times
                 answers = to_24_hour(hours)
                 for answer in answers:
-                    insert_time(place_id, {day: answer})
+                    time_details.append([place_id, {day: answer}])
+                    #insert_time(place_id, {day: answer})
     else:
         # Insert None values for all days of the week
         for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']:
-            insert_time(place_id, {day: (None, None, None, None)})
+            time_details.append([place_id, {day: (None, None, None, None)}])
+            #insert_time(place_id, {day: (None, None, None, None)})
 
     # Geometry
     geometry = place_details.get('geometry', None)
@@ -142,7 +151,8 @@ def clean_data(place_details):
         # Insert the categories into the database
         categories = formatted_details['types'].split(',')
         categories = set([category.strip() for category in categories])
-        insert_categories(place_id, categories)
+        category_details.append([place_id, categories])
+        #insert_categories(place_id, categories)
     
     # Price Level
     formatted_details['price_level'] = place_details.get('price_level', None)
@@ -166,11 +176,13 @@ def clean_data(place_details):
         photo_reference = main_photo.get('photo_reference', None)
         height = main_photo.get('height', None)
         width = main_photo.get('width', None)
-        insert_photos(place_id, photo_reference, height, width)
+        photo_details.append([place_id, photo_reference, height, width])
+        #insert_photos(place_id, photo_reference, height, width)
     else:
-        insert_photos(place_id, None, None, None)
+        photo_details.append([place_id, None, None, None])
+        #insert_photos(place_id, None, None, None)
 
-    return formatted_details
+    return [formatted_details, time_details, photo_details, category_details]
     
 def insert_city(city, country):
     '''
@@ -188,6 +200,21 @@ def insert_city(city, country):
     conn.close()
 
     return city_id
+
+def update_place(city_id, attractions):
+    '''
+    Updates tourist attractions in the database
+    Adds non-existent ones and skips others
+    '''
+
+    conn = sqlite3.connect('Databases/travel.db')
+    cursor = conn.cursor()
+
+    # Get all the place_ids already in the city
+    cursor.execute("SELECT place_id FROM places WHERE city_id = ?", (city_id,))
+    place_ids = set([place[0] for place in cursor.fetchall()])
+
+    # Insert places
 
 def insert_place(city_id, attractions):
     '''
@@ -368,60 +395,154 @@ def get_routes(place_ids, mode = 'driving'):
             
     return distances, times
 
-def get_city_country(geocode):
+def get_routes_simple(place_ids):
     '''
-    Returns the city and country from the geocode
+    Returns longtitude latitude of the places with these ids
     '''
+
+    conn = sqlite3.connect('Databases/travel.db')
+    cursor = conn.cursor()
+
+    # Get the places
+    cursor.execute("SELECT place_id, lat, lng FROM places WHERE place_id IN ({})".format(','.join(['?'] * len(place_ids))), place_ids)
+    places = cursor.fetchall()
+
+
+    # Get opening close times of the places
+    cursor.execute("SELECT place_id, day, open_hour, open_minute, close_hour, close_minute FROM time WHERE place_id IN ({})".format(','.join(['?'] * len(place_ids))), place_ids)
+    times = cursor.fetchall()
+
+    # Truncate to min opening hour min opening max close hour max close min for each place over all weeks
+    # Calculate the mind opening time and max closing time for each place_id
+    truncated_times = {}
+    for time in times:
+        place_id, day, open_hour, open_minute, close_hour, close_minute = time
+        if not truncated_times.get(place_id):
+            truncated_times[place_id] = [24, 60, 0, 0]
+
+        if open_hour is None:
+            truncated_times[place_id][0] = 9
+            truncated_times[place_id][1] = 0
+            truncated_times[place_id][2] = 17
+            truncated_times[place_id][3] = 0
+        elif open_hour == 0 and open_minute == 0 and close_minute == 0 and close_hour == 0:
+            continue
+        elif open_hour < truncated_times[place_id][0]:
+            truncated_times[place_id][0] = open_hour
+            truncated_times[place_id][1] = open_minute
+        elif open_hour == truncated_times[place_id][0] and open_minute < truncated_times[place_id][1]:
+            truncated_times[place_id][1] = open_minute
+        elif close_hour > truncated_times[place_id][2]:
+            truncated_times[place_id][2] = close_hour
+            truncated_times[place_id][3] = close_minute
+        elif close_hour == truncated_times[place_id][2] and close_minute > truncated_times[place_id][3]:
+            truncated_times[place_id][3] = close_minute
+    
+    for place_id in truncated_times:
+        truncated_times[place_id] = [truncated_times[place_id][0] * 60 + truncated_times[place_id][1], truncated_times[place_id][2] * 60 + truncated_times[place_id][3]]
+
+    ans = []
+    for place in places:
+        open, close = truncated_times[place[0]]
+        if open > 1440:
+            open = 1440
+        if close > 1440:
+            close = 1440
+        ans.append((place[0], place[1], place[2], open, close))
+    
+    conn.commit()
+    conn.close()
+
+    return ans
+
+def get_city_country(lat, lng):
+    '''
+    Returns the city and country from the latitude and longtitude
+    '''
+
+    reverse_geocode = gmaps.reverse_geocode((lat, lng))
     city = None
     country = None
 
-    for component in geocode[0]['address_components']:
+    for component in reverse_geocode[0]['address_components']:
         if 'locality' in component['types']:
             city = component['long_name']
         if 'country' in component['types']:
             country = component['long_name']
     
     return city, country
+    
 
-
-def get_attractions_user_input(names):
+def get_attractions_user_input(info):
     '''
     Returns a list of tourist attractions based on user input
     And gets nearby places to each of them
+    List of longtitudes and latitudes
     '''
-    attractions = []
+    required_locations = info['must_locations']
+    required_names = set(info['must_names'])
+    
+    required_attractions = set()
+    optional_attractions = set()
+    places_unique = set()
+    
+    for lat, lng in required_locations:
+        city, country = get_city_country(lat, lng)
 
-    for name in names:
-        # Geocode the city to get its coordinates
-        geocode_result = gmaps.geocode(name)
-        place_location = geocode_result[0]['geometry']['location']
-
-        city, country = get_city_country(geocode_result)
+        if city_exists(city):
+            # Get the place_ids in the city
+            conn = sqlite3.connect('Databases/travel.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT place_id, city_id FROM places WHERE city_id = (SELECT id FROM cities WHERE name = ?)", (city,))
+            all_places = cursor.fetchall()
+            place_ids = [place[0] for place in all_places]
+            city_id = all_places[0][1]
+            places_unique.update(place_ids)
+            optional_attractions.update(place_ids)
+            conn.close()
+        else:
+            city_id = insert_city(city, country)
 
         # Define parameters for nearby search
         params = {
-            'location': (place_location['lat'], place_location['lng']),
-            'radius': 10000,  # 10 kilometers (adjust as needed)
+            'location': (lat, lng),
+            'radius': 20000,  # 20 kilometers (adjust as needed)
             'type': 'tourist_attraction'
         }
 
         places = gmaps.places_nearby(**params)
 
-        #city_in_database = city_exists(city)
-
         # Extract and return information about tourist attractions
         for place in places['results']:
             # Get place details
             place_id = place['place_id']
+            if (place['name'] in required_names):
+                required_attractions.add(place_id)      
+
+            if place_id in places_unique:
+                continue                
+
+            places_unique.add(place_id)
+            optional_attractions.add(place_id)
             place_details = gmaps.place(place_id = place_id, fields = fields)['result']
 
             # Clean the place details
-            place_details = clean_data(place_details)
+            formatted_details, time_details, photo_details, category_details  = clean_data(place_details)
+            # Insert everything in the database
+            insert_place(city_id, [formatted_details])
+            for time in time_details:
+                insert_time(time[0], time[1])
+            for photo in photo_details:
+                insert_photos(photo[0], photo[1], photo[2], photo[3])
+            for category in category_details:
+                insert_categories(category[0], category[1])
 
-            # Add place details to the list
-            attractions.append(place_details)
-    
-    return attractions
+    # Remove required attractions from optional attractions
+    optional_attractions = optional_attractions - required_attractions
+
+    required_info = get_routes_simple(list(required_attractions))
+    optional_info = get_routes_simple(list(optional_attractions))
+    return required_info, optional_info
 
 
 
@@ -499,16 +620,5 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    city = 'Paris'
-    attractions = get_tourist_attractions(city)
-
-    # Testing get_routes
-    #ids = [attractions[i]['place_id'] for i in range(10)]
-    #distances, times = get_routes(ids, mode = 'driving')
-
-    # Testing get_attractions_user_input
-    #names = ['Eiffel Tower', 'Louvre Museum']
-    #attractions = get_attractions_user_input(names)
-    #print([attraction['name'] for attraction in attractions])
-    
-
+    names = {'must_locations': [('48.8606111', '2.337644'), ('48.85837009999999', '2.2944813')], 'must_names': ['Louvre Museum', 'Eiffel Tower'], 'ranking_considered': 'yes', 'Parks': 'exclude', 'Tourist Attractions': 'include', 'transport': 'car', 'budget': '1000', 'hotel': ('48.8687444', '2.3008389'), 'sleepTime': '21:00', 'wakeTime': '07:00', 'departureDate': '2024-06-10', 'departureTime': '12:00', 'numDays': '8'}
+    required, optional = get_attractions_user_input(names)
