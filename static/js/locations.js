@@ -1,3 +1,5 @@
+////////////////////////////// DRAGGABILITY //////////////////////////////
+
 const sortableList = document.getElementById("sortable");
 let draggedItem = null;
 
@@ -50,46 +52,37 @@ const getDragAfterElement = (container, y) => {
   ).element;
 };
 
+////////////////////////////// SUBMISSIONS //////////////////////////////
+
 const data_form = document.getElementById("data-form");
 const all_locations = document.getElementById("must-locations");
 const all_names = document.getElementById("must-names");
 const location_search = document.getElementById("location-input");
+var hotel = document.getElementsByClassName("hotel")[0];
 
 data_form.addEventListener("submit", (e) => {
   var locs = [];
   var names = [];
+
+  // Finds all the names, longitudes and latitudes for all locations
+  // the user inputted from the autocomplete locations form.
   const list_items = document.getElementsByClassName("loc");
   for (var li_tag of list_items) {
     locs.push(li_tag.id);
     names.push(li_tag.innerHTML);
   }
 
+  // If they didn't enter any location, a warning will be shown and the form
+  // won't submit
   if (locs.length == 0) {
     location_search.setCustomValidity("You haven't entered any location!");
     e.preventDefault();
     location_search.reportValidity();
   } else {
-    all_locations.value = locs.join("$");
+    // Otherwise, the data found will be put into hidden inputs so it can
+    // reach the backend when the submission goes through after this.
+    all_locations.value = locs.join("*");
     all_names.value = names.join("$");
-    var hotel = document.getElementsByClassName("hotel")[0];
     hotel.value = hotel.id;
-  }
-});
-
-location_search.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    const new_li = document.createElement("li");
-    new_li.className = "loc";
-    new_li.draggable = "true";
-    new_li.innerHTML = e.target.value;
-    new_li.id = "";
-    new_li.addEventListener("click", (e) => {
-      e.target.remove();
-    });
-
-    sortableList.appendChild(new_li);
-
-    e.target.value = "";
-    e.target.setCustomValidity("");
   }
 });
