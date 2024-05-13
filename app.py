@@ -30,7 +30,7 @@ def results():
     data = dict(request.form)
     del data['Submit']
     del data['location_search']
-    data['must_locations'] = [tuple(info.split("$")) for info in data['must_locations'].split('$')]
+    data['must_locations'] = [tuple(info.split("$")) for info in data['must_locations'].split('*')]
     data['must_names'] = data['must_names'].split('$')
     data['hotel'] = tuple(data['hotel'].split("$"))
 
