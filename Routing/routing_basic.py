@@ -1,5 +1,7 @@
 """
-Standard Vehicle Routing problem with Time Windows
+Standard Vehicle Routing Problem with Time Windows
+
+If there is no solution involving every one of the nodes, the algorithm will return "No Solution"
 """
 
 import sqlite3
@@ -124,13 +126,22 @@ connection.close()
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
-# Create data model for VRP 
+# Create data model for Vehicle Routing Problem 
 def create_data_model():
     data = {}
+
+    # square array with dimensions equal to the number of nodes, gives entry (i,j) is the time it takes to get from node i to node j
     data["time_matrix"] = distance_matrix
+
+    # list of tuples where each tuple is (open time, closing time) in same order as each node appears in time_matrix
     data["time_windows"] = time_windows
+
+    # number of vehicles (days of travel, in our case)
     data["num_vehicles"] = 2
+
+    # start and end point of each vehicle (hotel where traveller is staying, in our case)
     data["depot"] = 0
+
     return data
 
 # Prints solution in Terminal
