@@ -105,7 +105,12 @@ window.addEventListener("load", (e) => {
   // Listener for when a users selects an option from the autocomplete
   // dropdown menu.
   hotel_autocomplete.addListener("place_changed", (e) => {
-    const place = input_autocomplete.getPlace();
+    const place = hotel_autocomplete.getPlace();
+
+    if (!place.geometry) {
+      window.alert("No details available for this hotel");
+      return;
+    }
 
     const latitude = place.geometry.location.lat();
     const longitude = place.geometry.location.lng();
