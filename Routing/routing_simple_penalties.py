@@ -119,11 +119,11 @@ connection.close()
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
-# Create list of node numbers corresponding to must-see locations
-
+# # Create list of node numbers corresponding to must-see locations
+# mandatory_locs = [1,2]
 
 # Create list of node numbers corresponding to optional locations
-
+optional_locs = [0]
 
 # Create data model for VRP 
 def create_data_model():
@@ -211,13 +211,10 @@ def main():
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
 
-    # Allow node dropping for locations that are optional
+    # Allow node dropping for locations that are optional - works with penalty of any size
     penalty = 10
-    routing.AddDisjunction([manager.NodeToIndex(0)], penalty)
-
-    # for node in range(1, len(data["time_matrix"])):
-    #     routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
-
+    for node in optional_locs:
+        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_vehicles"]):
@@ -226,21 +223,11 @@ def main():
         )
         routing.AddVariableMinimizedByFinalizer(time_dimension.CumulVar(routing.End(i)))
 
-    # # Setting first solution heuristic.
-    # search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    # search_parameters.first_solution_strategy = (
-    #     routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-    # )
-
-        # Setting first solution heuristic.
+    # Setting first solution heuristic.
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (
         routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
     )
-    search_parameters.local_search_metaheuristic = (
-        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
-    )
-    search_parameters.time_limit.FromSeconds(1)
 
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)
