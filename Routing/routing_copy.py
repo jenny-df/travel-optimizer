@@ -5,126 +5,74 @@ If there is no solution involving every one of the nodes, the algorithm will ret
 """
 
 import sqlite3
+import math
+from ortools.constraint_solver import routing_enums_pb2
+from ortools.constraint_solver import pywrapcp
+# from data_scraper import *
 
-# connecting to the database
-connection = sqlite3.connect("map.db")
+"""Necessary inputs for the VRP: locations, """
 
-# cursor
-cursor = connection.cursor()
+# list of tuples (ID, latitude, longitude) for every location
+# locations = get_routes_simple()
+locations = [('ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876), 
+             ('ChIJ2RFUePdYwokRd5R6XF6xFD0', 40.7651258, -73.97992359999999), 
+             ('ChIJ8VOfr1RYwokRhil9_pcMKuc', 40.7564269, -73.9888338), 
+             ('ChIJ9U1mz_5YwokRosza1aAk0jM', 40.7587402, -73.9786736), 
+             ('ChIJCXoPsPRYwokRsV1MYnKBfaI', 40.78132409999999, -73.9739882), 
+             ('ChIJEdN5k4lYwokRuNPGGOZUwOQ', 40.7805136, -73.9810847), 
+             ('ChIJHfPuClZYwokRP2wzLQjhuEI', 40.7601775, -73.9843631), 
+             ('ChIJK3vOQyNawokRXEa9errdJiU', 40.7060855, -73.9968643), 
+             ('ChIJKxDbe_lYwokRVf__s8CPn-o', 40.7614327, -73.97762159999999), 
+             ('ChIJMf7Re8dZwokRJ0Nyj2IixlM', 40.745866, -74.006985), 
+             ('ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629),
+             ('ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889)]
 
-# print statement to make sure there are no errors
-print("Connected to the database")
+locations_for_distance_matrix = [(lat, long) for (id,lat,long) in locations]
 
-# SQL command to create a table in the database
-sql_command = """CREATE TABLE IF NOT EXISTS map (
-    LocationID INT PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    Latitude DECIMAL(10, 6) NOT NULL,
-    Longitude DECIMAL(10, 6) NOT NULL,
-    OpenTime TIME,
-    CloseTime TIME
-);"""
+def compute_distance_matrix(locations):
+    """Creates callback to return Manhattan distance between points."""
+    R = 6371e3  # Earth's mean radius in meters
+    distances = []
+    for from_counter, from_node in enumerate(locations):
+        individual_node_distance = []
+        for to_counter, to_node in enumerate(locations):
+            if from_counter == to_counter:
+                individual_node_distance.append(0)
+            else:
+                # Use Haversine formula to compute the shortest distance over the earth’s surface between locations
+                lat1 = to_node[0]
+                lat2 = from_node[0]
+                lon1 = to_node[1]
+                lon2 = from_node[1]
 
-# execute the statement
-cursor.execute(sql_command)
+                phi1 = lat1 * math.pi / 180  # phi, lambda in radians
+                phi2 = lat2 * math.pi / 180
+                phi_diff = (lat2 - lat1) * math.pi / 180 # latitude diff
+                lambda_diff = (lon2 - lon1) * math.pi / 180 # longitude diff
 
-# SQL command to insert data into the database
-sql_command ="""INSERT INTO map (LocationID, Name, Latitude, Longitude, OpenTime, CloseTime)
-VALUES
-    (1, 'Coffee House', 40.7128, -74.0060, 7, 19),
-    (2, 'Park', 34.0522, -118.2437, 6, 22),
-    (3, 'Library', 51.5074, -0.1278, 9, 18),
-    (4, 'Gym', -33.8688, 151.2093, 6, 21),
-    (5, 'Restaurant', 48.8566, 2.3522, 11, 22),
-    (6, 'Museum', 55.7558, 37.6176, 10, 17),
-    (7, 'Grocery Store', 42.3601, -71.0589, 8, 20),
-    (8, 'Movie Theater', 34.0522, -118.2437, 12, 23),
-    (9, 'Convenience Store', 37.7749, -122.4194, 6, 12),
-    (10, 'Bookstore', 40.7128, -74.0060, 10, 21);"""
+                a = math.sin(phi_diff / 2) * math.sin(phi_diff / 2) + math.cos(phi1) * math.cos(phi2) * math.sin(lambda_diff / 2) * math.sin(lambda_diff / 2)
+                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-# execute the statement
-# cursor.execute(sql_command)
+                distance = R * c  # distance in meters
+                individual_node_distance.append(int(distance))
+        distances.append(individual_node_distance)
+    return distances
 
-# To save the changes in the files. Never skip this.
-# If we skip this, nothing will be saved in the database.
-connection.commit()
+# Create distance matrix which for each node contains a list of the distances (in meters) from that node to all other nodes
+distance_matrix = compute_distance_matrix(locations_for_distance_matrix)
 
-# execute the command to fetch all the data from the table emp
-cursor.execute("SELECT * FROM map")
- 
-# store all the fetched data in the ans variable
-ans = cursor.fetchall()
 
-# SQL command to create a table in the database
-sql_command = """CREATE TABLE IF NOT EXISTS distance (
-    LocationID INT PRIMARY KEY,
-    Location1 FLOAT,
-    Location2 FLOAT,
-    Location3 FLOAT,
-    Location4 FLOAT,
-    Location5 FLOAT,
-    Location6 FLOAT,
-    Location7 FLOAT,
-    Location8 FLOAT,
-    Location9 FLOAT,
-    Location10 FLOAT
-);"""
+# Round latitute and longitude to 6 decimal places (conserves within 11cm accuracy) and convert to int
+# locations = [(int(round(lat,6)*(1e+6)), int(round(long,6)*(1e+6))) for (id,lat,long) in locations]
 
-# execute the statement
-cursor.execute(sql_command)
+# Create time window matrix, a list of tuples where each tuple is (open time, closing time) in same order as each node appears in time_matrix
+time_windows = [(133, 831), (1071, 1374), (290, 827), (313, 1032), (12, 382), (1045, 1440), (72, 604), (348, 1086), (755, 1302), (434, 1012), (43, 659)]
 
-# SQL command to insert data into the database
-sql_command ="""
-INSERT INTO distance (LocationID, Location1, Location2, Location3, Location4, Location5, Location6, Location7, Location8, Location9, Location10)
-VALUES
-    (1, 0, 6, 9, 8, 7, 3, 6, 2, 3, 2),
-    (2, 6, 0, 8, 3, 2, 6, 8, 4, 8, 8),
-    (3, 9, 8, 0, 11, 10, 6, 3, 9, 5, 3),
-    (4, 8, 3, 11, 0, 1, 7, 10, 6, 10, 10),
-    (5, 7, 2, 10, 1, 0, 6, 9, 4, 8, 9),
-    (6, 3, 6, 6, 7, 6, 0, 2, 3, 2, 2),
-    (7, 6, 8, 3, 10, 9, 2, 0, 6, 2, 5),
-    (8, 2, 4, 9, 6, 4, 3, 6, 0, 4, 4),
-    (9, 3, 8, 5, 10, 8, 2, 2, 4, 0, 3),
-    (10, 2, 8, 8, 10, 9, 2, 5, 4, 3, 0);
-"""
- 
-# execute the statement
-cursor.execute(sql_command)
-
-# execute the command to fetch some location data from the table distance
-cursor.execute("""
-               SELECT Location1, Location2, Location4, Location7, Location9
-               FROM distance
-               WHERE LocationID IN (1,2,4,7,9);
-               """)
-
-# store all the fetched data in the ans variable
-ans = cursor.fetchall()
-
-# Create distance matrix which is a list of lists of ints
-distance_matrix = [[int(distance) for distance in individual_distances] for individual_distances in ans]
-
-# execute the command to fetch open and closing times data from the table map
-cursor.execute("""
-               SELECT OpenTime, CloseTime
-               FROM map
-               WHERE LocationID IN (1,2,4,7,9);
-               """)
-
-# store all the fetched data in the ans variable
-time_windows = cursor.fetchall()
-
-# close the connection
-connection.close()
 
 """Vehicle Routing Problem (VRP) with Time Windows
 
    Distances in hours
 """
-
-from ortools.constraint_solver import routing_enums_pb2
-from ortools.constraint_solver import pywrapcp
 
 # Create data model for Vehicle Routing Problem 
 def create_data_model():
