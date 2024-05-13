@@ -201,8 +201,8 @@ def main():
     time = "Time"
     routing.AddDimension(
         transit_callback_index,
-        30,  # allow waiting time
-        30,  # maximum time per vehicle
+        1440,  # allow waiting time
+        1440,  # maximum time per vehicle
         False,  # Don't force start cumul to zero.
         time,
     )
