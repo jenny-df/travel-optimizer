@@ -10,7 +10,6 @@ app = Flask(__name__,
 )
 
 app.config.from_pyfile('config.py')
-
 load_dotenv()
 
 @app.route('/', methods = ["GET"])
@@ -30,8 +29,10 @@ def results():
     # Getting values from the form
     data = dict(request.form)
     del data['Submit']
-    data['must_locations'] = data['must_locations'].split('\r\n')
-    data['categories_of_locations'] = request.form.getlist('categories_of_locations')
+    del data['location_search']
+    data['must_locations'] = [tuple(info.split("--")) for info in data['must_locations'].split('$')]
+    data['must_names'] = data['must_names'].split('$')
+    print(data)
 
 	# <TODO> Audrey: Call to classifier 
     clustering_output = [["1.1", "1.2", "1.3"], ["2.1", "2.2"], ["3.1"]]
@@ -42,6 +43,7 @@ def results():
                         clusters = clustering_output, 
                         routes = optimized_route_output
                         )
+
 
 @app.route('/scrape/<string:city_name>', methods = ["GET"])
 def scrape(city_name):

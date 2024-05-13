@@ -5,34 +5,56 @@
   <h1>Enter your data here!</h1>
   <form action="/results" method="POST">
     <div>
-      <label for="locations"
-        >Enter the destinations you MUST go to (one per line):</label
-      >
+      <label for="location_search"> Destinations you MUST go to: </label>
       <br />
-      <textarea name="must_locations" id="location-input" required></textarea>
+      <input name="location_search" id="location-input" />
+      <input name="must_locations" id="must-locations" hidden />
+      <input name="must_names" id="must-names" hidden />
       <br />
+      <div class="sortable-list">
+        <ol id="sortable"></ol>
+      </div>
+    </div>
+    <div>
+      <label for="ranking_considered">
+        Should the ranking above to be considered?
+      </label>
+      <select name="ranking_considered" class="small-selects" required>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
     </div>
 
-    <!-- <div>
+    <div>
       <label for="categories_of_locations"
-        >Select potential other types of places you would like to go to:</label
+        >Other types of places you would or wouldn't like to go to:</label
       >
       <br />
-      {% for category in categories %}
-      <input
-        type="checkbox"
-        name="categories_of_locations"
-        class="categories_of_locations"
-        value="{{category}}"
-      />{{category}}<br />
-      {% endfor %}
-      <br />
-    </div> -->
+      <div class="all-radios">
+        {% for category in categories %}
+        <div class="sub-radios">
+          <input
+            type="radio"
+            name="{{category}}"
+            value="include"
+            class="include_categories"
+          />
+          <input
+            type="radio"
+            name="{{category}}"
+            value="exclude"
+            class="exclude_categories"
+          />
+          <span>{{category}}</span>
+        </div>
+        <br />
+        {% endfor %}
+      </div>
+    </div>
 
     <div>
-      <label for="transport">Select the transportation mode:</label>
-      <br />
-      <select name="transport" required>
+      <label for="transport">Mode of Transportation:</label>
+      <select name="transport" class="small-selects" required>
         <option value="" disabled selected>--select--</option>
         <option value="bus">Bus</option>
         <option value="car">Car</option>
@@ -47,16 +69,18 @@
       <input type="number" name="budget" id="budget" min="1" required />
       <br />
     </div>
-
     <div>
-      <label for="departure">Select departure date:</label>
-      <br />
-      <input type="date" name="departureDate" id="departureDate" required />
+      <label for="sleepTime">Sleep Time:</label>
+      <input type="time" name="sleepTime" id="sleepTime" required />
+      <label for="wakeTime">Wake-up Time:</label>
+      <input type="time" name="wakeTime" id="wakeTime" required />
       <br />
     </div>
+
     <div>
-      <label for="time">Select departure time:</label>
-      <br />
+      <label for="departure">Departure date:</label>
+      <input type="date" name="departureDate" id="departureDate" required />
+      <label for="time">Departure time:</label>
       <input type="time" name="departureTime" id="departureTime" required />
       <br />
     </div>
@@ -89,17 +113,20 @@
   </form>
   <button onclick="" class="form-btn">Show Locations on Map</button>
   <div id="map"></div>
+  <!-- <script
+    async
+    src="http://maps.googleapis.com/maps/api/js?key={{google_key}}&loading=async&callback=initMap"
+  ></script>
+  <script
+    src="http://maps.googleapis.com/maps/api/js?key={{google_key}}&libraries=places,marker&callback=initMap&solution_channel=GMP_QB_addressselection_v2_cAB"
+    async
+  ></script> -->
+  <script src="http://maps.googleapis.com/maps/api/js?v=3.exp&key={{google_key}}&sensor=false&libraries=places"></script>
+
   <script src="/static/js/main.js"></script>
-  <script
-    async
-    src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&loading=async&callback=initMap"
-  ></script>
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&libraries=places,marker&callback=initMap&solution_channel=GMP_QB_addressselection_v2_cAB"
-    async
-    defer
-  ></script>
-  <script>
+  <script src="/static/js/locations.js"></script>
+
+  <!-- <script>
     ((g) => {
       var h,
         a,
@@ -138,6 +165,6 @@
       key: "{{google_key}}",
       v: "weekly",
     });
-  </script>
+  </script> -->
 </div>
 {% endblock %}
