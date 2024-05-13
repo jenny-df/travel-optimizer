@@ -6,35 +6,73 @@ If there is no solution involving every one of the nodes, the algorithm will ret
 
 import sqlite3
 import math
+from ortools.constraint_solver import routing_enums_pb2
+from ortools.constraint_solver import pywrapcp
+# from data_scraper import *
 
-def compute_euclidean_distance_matrix(locations):
-    """Creates callback to return distance between points."""
-    distances = {}
+"""Necessary inputs for the VRP: locations, """
+
+# list of tuples (ID, latitude, longitude) for every location
+# locations = get_routes_simple()
+locations = [('ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876), 
+             ('ChIJ2RFUePdYwokRd5R6XF6xFD0', 40.7651258, -73.97992359999999), 
+             ('ChIJ8VOfr1RYwokRhil9_pcMKuc', 40.7564269, -73.9888338), 
+             ('ChIJ9U1mz_5YwokRosza1aAk0jM', 40.7587402, -73.9786736), 
+             ('ChIJCXoPsPRYwokRsV1MYnKBfaI', 40.78132409999999, -73.9739882), 
+             ('ChIJEdN5k4lYwokRuNPGGOZUwOQ', 40.7805136, -73.9810847), 
+             ('ChIJHfPuClZYwokRP2wzLQjhuEI', 40.7601775, -73.9843631), 
+             ('ChIJK3vOQyNawokRXEa9errdJiU', 40.7060855, -73.9968643), 
+             ('ChIJKxDbe_lYwokRVf__s8CPn-o', 40.7614327, -73.97762159999999), 
+             ('ChIJMf7Re8dZwokRJ0Nyj2IixlM', 40.745866, -74.006985), 
+             ('ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629),
+             ('ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889)]
+
+locations_for_distance_matrix = [(lat, long) for (id,lat,long) in locations]
+
+def compute_distance_matrix(locations):
+    """Creates callback to return Manhattan distance between points."""
+    R = 6371e3  # Earth's mean radius in meters
+    distances = []
     for from_counter, from_node in enumerate(locations):
-        distances[from_counter] = {}
+        individual_node_distance = []
         for to_counter, to_node in enumerate(locations):
             if from_counter == to_counter:
-                distances[from_counter][to_counter] = 0
+                individual_node_distance.append(0)
             else:
-                # Euclidean distance
-                distances[from_counter][to_counter] = int(
-                    math.hypot((from_node[0] - to_node[0]), (from_node[1] - to_node[1]))
-                )
+                # Use Haversine formula to compute the shortest distance over the earth’s surface between locations
+                lat1 = to_node[0]
+                lat2 = from_node[0]
+                lon1 = to_node[1]
+                lon2 = from_node[1]
+
+                phi1 = lat1 * math.pi / 180  # phi, lambda in radians
+                phi2 = lat2 * math.pi / 180
+                phi_diff = (lat2 - lat1) * math.pi / 180 # latitude diff
+                lambda_diff = (lon2 - lon1) * math.pi / 180 # longitude diff
+
+                a = math.sin(phi_diff / 2) * math.sin(phi_diff / 2) + math.cos(phi1) * math.cos(phi2) * math.sin(lambda_diff / 2) * math.sin(lambda_diff / 2)
+                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+                distance = R * c  # distance in meters
+                individual_node_distance.append(int(distance))
+        distances.append(individual_node_distance)
     return distances
 
-# Create distance matrix which is a list of lists of ints
-distance_matrix = 
+# Create distance matrix which for each node contains a list of the distances (in meters) from that node to all other nodes
+distance_matrix = compute_distance_matrix(locations_for_distance_matrix)
 
-# store all the fetched data in the ans variable
-time_windows = 
+
+# Round latitute and longitude to 6 decimal places (conserves within 11cm accuracy) and convert to int
+# locations = [(int(round(lat,6)*(1e+6)), int(round(long,6)*(1e+6))) for (id,lat,long) in locations]
+
+# Create time window matrix, a list of tuples where each tuple is (open time, closing time) in same order as each node appears in time_matrix
+time_windows = [(133, 831), (1071, 1374), (290, 827), (313, 1032), (12, 382), (1045, 1440), (72, 604), (348, 1086), (755, 1302), (434, 1012), (43, 659)]
+
 
 """Vehicle Routing Problem (VRP) with Time Windows
 
    Distances in hours
 """
-
-from ortools.constraint_solver import routing_enums_pb2
-from ortools.constraint_solver import pywrapcp
 
 # Create data model for Vehicle Routing Problem 
 def create_data_model():
