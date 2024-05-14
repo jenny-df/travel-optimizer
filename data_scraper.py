@@ -513,7 +513,7 @@ def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filte
         if close > 1440:
             close = 1440
         avg = get_average_time(place[0])
-        ans.append((place[0], place[1], place[2], place[3], open, close, avg))
+        ans.append((place[0], place[1], float(place[2]), float(place[3]), open, close, avg))
     
     conn.commit()
     conn.close()
@@ -574,7 +574,6 @@ def get_attractions_user_input(info):
             cursor.execute("SELECT place_id, city_id FROM places WHERE city_id = (SELECT id FROM cities WHERE name = ?)", (city,))
             all_places = cursor.fetchall()
             place_ids = [place[0] for place in all_places]
-            print(all_places)
             city_id = all_places[0][1]
             places_unique.update(place_ids)
             optional_attractions.update(place_ids)
@@ -641,7 +640,7 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel_name'], info['hotel_loc'][0], info['hotel_loc'][1], 0, 1440, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
+    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), 0, 1440, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)
     return required_info, optional_info
 
