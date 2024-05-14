@@ -20,11 +20,17 @@
 - Open the website (hosted locally). The link should be http://127.0.0.1:5000 or http://localhost:5000. The terminal will tell you which one it is.
 - If you make any change, it will be reflected on the website when you refresh the page. If you made a change in the CSS or JS code, it might not be reflected immediately because of cookies and caching; you'll have to do a hard refresh of the page or open it from another browser to see the changes.
 
+## Database
+- The preprocessed dataset is [travel.db](/Databases/travel.db)
+- You can restart the database anytime by deleting [travel.db](/Databases/travel.db) and reruning the [create-databases.py](/Databases/create-databases.py)
+- We recommend using `SQLite` and `SQLite Viewer` extensions in `VSCode` to view and interact with the database.
+- To modify any scraping, cleaning or filtering refer to [data_scraper.py](/data_scraper.py) and `get_routes_simple()` function.
+
 ## Sidenotes:
 
 1. If you make a change to the configurations, please add the generic name of the variable above.
 2. If any major change is made please update the README.
-3. If you pip install any packages that everyone should have, make sure only relevant stuff is downloaded (AND everything currently in the requirements.txt file) and then run pip freeze > requirements.txt to reflect the changes for everyone.
+3. If you pip install any packages that everyone should have, make sure only relevant stuff is downloaded (AND everything currently in the [requirements.txt](/requirements.txt) file) and then run `pip freeze > requirements.txt` to reflect the changes for everyone.
 
 ## Assumptions:
 
