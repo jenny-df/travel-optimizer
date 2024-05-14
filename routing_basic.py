@@ -222,7 +222,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
     else:
         return([],0)
 
-locations = [('a', 'ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876, 60, 1200, 10), 
+if __name__ == "__main__":
+    locations = [('a', 'ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876, 60, 1200, 10), 
              ('b', 'ChIJ2RFUePdYwokRd5R6XF6xFD0', 40.7651258, -73.97992359999999, 240, 1309, 10), 
              ('c', 'ChIJ8VOfr1RYwokRhil9_pcMKuc', 40.7564269, -73.9888338, 320, 1200, 10), 
              ('d', 'ChIJ9U1mz_5YwokRosza1aAk0jM', 40.7587402, -73.9786736, 180, 1054, 10), 
@@ -235,7 +236,6 @@ locations = [('a', 'ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876
              ('k', 'ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629, 567, 987, 10),
              ('l', 'ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889, 4, 1434, 10)]
 
-print(router(locations, [], False, 'car', 5))
+    print(router(locations, [], False, 'car', 5))
 
-# if __name__ == "__main__":
-#     main()
+    pass
