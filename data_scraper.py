@@ -69,6 +69,26 @@ def to_24_hour(time_unicode):
     
     return answers
 
+def input_time_to_int(time_str):
+    '''
+    Converts a time string to an integer
+    '''
+    hour, minute = time_str.split(':')
+    hour = int(hour)
+    minute = int(minute)
+
+    return hour * 60 + minute
+
+def sleep_time_truncate(sleep_time, wake_time, open_time, close_time):
+    '''
+    Truncates the open/close times according to the sleep time
+    '''
+
+    open_time = max(open_time, wake_time)
+    close_time = min(close_time, sleep_time)
+
+    return open_time, close_time
+
 def city_exists(city):
     '''
     Checks if a city exists in the database
@@ -395,7 +415,7 @@ def get_routes(place_ids, mode = 'driving'):
             
     return distances, times
 
-def get_routes_simple(place_ids):
+def get_routes_simple(place_ids, sleep_time, wake_time):
     '''
     Returns longtitude latitude of the places with these ids
     '''
@@ -440,6 +460,7 @@ def get_routes_simple(place_ids):
     
     for place_id in truncated_times:
         truncated_times[place_id] = [truncated_times[place_id][0] * 60 + truncated_times[place_id][1], truncated_times[place_id][2] * 60 + truncated_times[place_id][3]]
+        truncated_times[place_id] = sleep_time_truncate(sleep_time, wake_time, truncated_times[place_id][0], truncated_times[place_id][1])
 
     ans = []
     for place in places:
@@ -481,6 +502,7 @@ def get_attractions_user_input(info):
     '''
     required_locations = info['must_locations']
     required_names = set(info['must_names'])
+    sleep_time, wake_time = input_time_to_int(info['sleepTime']), input_time_to_int(info['wakeTime'])
     
     required_attractions = set()
     optional_attractions = set()
@@ -564,8 +586,8 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions))
-    optional_info = get_routes_simple(list(optional_attractions))
+    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions), sleep_time, wake_time)
+    optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time)
     return required_info, optional_info
 
 
