@@ -353,34 +353,40 @@ def categories_including_filter(all_place_ids, filters):
     Returns a list of places filtered by the categories in filters
     '''
 
+    if not filters:
+        return all_place_ids
+
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
-    all_place_id_str = ', '.join(['?' for _ in range(len(all_place_ids))])
-    query = f"SELECT place_id FROM categories WHERE {' AND '.join([f'{category} = 1' for category in filters])} AND place_id IN ({all_place_id_str})"
+    #all_place_id_str = ', '.join(['?'] * len(all_place_ids))
+    query = f"SELECT place_id FROM categories WHERE {' OR '.join([f'{category} = 1' for category in filters])} AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
     cursor.execute(query, all_place_ids)
     place_ids = set([place[0] for place in cursor.fetchall()])
     
     conn.commit()
     conn.close()
     
-    return place_ids
+    return list(place_ids)
 
 def categories_excluding_filter(all_place_ids, filters):
     '''
     Returns a list of places filtered by the categories not in filters
     '''
-
+    if not filters:
+        return all_place_ids
+    
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
     all_place_id_str = ', '.join(['?' for _ in range(len(all_place_ids))])
-    query = f"SELECT place_id FROM categories WHERE place_id IN ({all_place_id_str}) AND {' AND '.join([f'{category} = 1' for category in filters if category not in filters])}"
+    query = f"SELECT place_id FROM categories WHERE {' AND '.join([f'{category} = 1' for category in filters])} AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
     cursor.execute(query, all_place_ids)
     place_ids = set([place[0] for place in cursor.fetchall()])
+    place_ids = set(all_place_ids) - place_ids
     
     conn.commit()
     conn.close()
     
-    return place_ids
+    return list(place_ids)
 
 def clean_matrix(place_ids, matrix):
     '''
@@ -425,13 +431,16 @@ def get_routes(place_ids, mode = 'driving'):
             
     return distances, times
 
-def get_routes_simple(place_ids, sleep_time, wake_time):
+def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filters_excluding):
     '''
     Returns longtitude latitude of the places with these ids
     '''
 
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
+
+    place_ids = categories_including_filter(place_ids, filters_including)
+    place_ids = categories_excluding_filter(place_ids, filters_excluding)
 
     # Get the places
     cursor.execute("SELECT place_id, lat, lng FROM places WHERE place_id IN ({})".format(','.join(['?'] * len(place_ids))), place_ids)
@@ -513,6 +522,8 @@ def get_attractions_user_input(info):
     required_locations = info['must_locations']
     required_names = set(info['must_names'])
     sleep_time, wake_time = input_time_to_int(info['sleepTime']), input_time_to_int(info['wakeTime'])
+    filters_including = info['include']
+    filters_excluding = info['exclude']
     
     required_attractions = set()
     optional_attractions = set()
@@ -596,11 +607,8 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions), sleep_time, wake_time)
-    optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time)
-
-    
-
+    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
+    optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)
     return required_info, optional_info
 
 
@@ -679,8 +687,18 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    names = {'must_locations': [('43.981046', '5.562505')], 'must_names': ['Simiane-la-Rotonde'], 'ranking_considered': 'yes', 'Parks': 'include', 'Casinos': 'include', 'Tourist Attractions': 'exclude', 'transport': 'public transport', 'budget': '123', 'hotel': ('43.8815077', '5.3831174'), 'sleepTime': '20:59', 'wakeTime': '08:59', 'departureDate': '2024-05-14', 'departureTime': '14:59', 'numDays': '5'}
+    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '1231231', 'hotel': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': ['stadium', 'museum'], 'exclude': ['museum']}
     required, optional = get_attractions_user_input(names)
 
-    print(optional)
+    ids = [place[0] for place in optional]
+
+    filters = ['museum']
+
+    print(len(optional))
+
+    #new = categories_including_filter(ids, filters)
+    #print(ids)
+    #print()
+    #print()
+    #print(new)
     #print(len(required), len(optional))
