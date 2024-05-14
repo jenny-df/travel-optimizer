@@ -51,24 +51,6 @@
         {% endfor %}
       </div>
     </div>
-
-    <div>
-      <label for="transport">Mode of Transportation:</label>
-      <select name="transport" class="small-selects" required>
-        <option value="" disabled selected>--select--</option>
-        <option value="public transport">Public Transport</option>
-        <option value="car">Car</option>
-        <option value="bike">Bike</option>
-        <option value="walking">Walking</option>
-      </select>
-      <br />
-    </div>
-    <div>
-      <label for="budget">Budget:</label>
-      <br />
-      <input type="number" name="budget" id="budget" min="1" required />
-      <br />
-    </div>
     <div>
       <label for="hotel_input">Hotel:</label>
       <br />
@@ -83,7 +65,26 @@
       <input type="time" name="wakeTime" id="wakeTime" required />
       <br />
     </div>
-
+    <div>
+      <label for="transport">Mode of Transportation:</label>
+      <select name="transport" class="small-selects" id="transport" required>
+        <option value="" disabled selected>--select--</option>
+        <option value="public transport">Public Transport</option>
+        <option value="car">Car</option>
+        <option value="bike">Bike</option>
+        <option value="walking">Walking</option>
+      </select>
+      <label for="budget">Budget:</label>
+      <select name="budget" class="small-selects" id="budget" required>
+        <option value="" disabled selected>--select--</option>
+        <option value="$">$</option>
+        <option value="$$">$$</option>
+        <option value="$$$">$$$</option>
+        <option value="$$$$">$$$$</option>
+        <option value="$$$$$">$$$$$</option>
+      </select>
+      <br />
+    </div>
     <div>
       <label for="departure">Arrival date:</label>
       <input type="date" name="arrivalDate" id="arrivalDate" required />
