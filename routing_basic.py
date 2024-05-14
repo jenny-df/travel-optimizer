@@ -97,6 +97,31 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
         return data
 
+    # Prints solution in Terminal
+    # def return_solution(data, manager, routing, solution):
+        print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
+        time_dimension = routing.GetDimensionOrDie("Time")
+        total_time = 0
+        for vehicle_id in range(data["num_days"]):
+            index = routing.Start(vehicle_id)
+            plan_output = f"Route for vehicle {vehicle_id}:\n"
+            while not routing.IsEnd(index):
+                time_var = time_dimension.CumulVar(index)
+                plan_output += (
+                    f"{manager.IndexToNode(index)}"
+                    f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
+                    " -> "
+                )
+                index = solution.Value(routing.NextVar(index))
+            time_var = time_dimension.CumulVar(index)
+            plan_output += (
+                f"{manager.IndexToNode(index)}"
+                f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
+            )
+            plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
+            print(plan_output)
+            total_time += solution.Min(time_var)
+        print(f"Total time of all routes: {total_time}min")
 
     # Prints solution in Terminal
     def return_solution(data, manager, routing, solution):
@@ -106,40 +131,45 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
         plan = []
         for day_id in range(data["num_days"]):
+            day_plan = []
 
             index = routing.Start(day_id)
             
             while not routing.IsEnd(index):
                 #Cumulative travel time when a vehicle arrives at the location with the given index
                 time_var = time_dimension.CumulVar(index)
-                plan.append({'node_number':manager.IndexToNode(index), 
+                day_plan.append({'node_number':manager.IndexToNode(index), 
                                     'time_window':(solution.Min(time_var), solution.Max(time_var)),
                                     'travel_time': solution.Min(time_var)})
 
                 index = solution.Value(routing.NextVar(index))
             time_var = time_dimension.CumulVar(index)
-            plan.append({'node_number':manager.IndexToNode(index), 
+            day_plan.append({'node_number':manager.IndexToNode(index), 
                         'time_window':(solution.Min(time_var), solution.Max(time_var)),
                         'travel_time': solution.Min(time_var)})
             total_time += solution.Min(time_var)
+            plan.append(day_plan)
         # print(f"Total time of all routes: {total_time}min")
 
         plan_output = []
 
         for day_plan in plan:
             day_plan_output = []
-            node_number = day_plan['node_number']
 
-            name_lat_long_visit = reference_dict[node_number]
+            for location in day_plan:
+                
+                node_number = location['node_number']
 
-            # reference_dict[idx] = {'name':name, 'lat':lat, 'long':long, 'visit_time':visit_time}
+                name_lat_long_visit = reference_dict[node_number]
 
-            day_plan_output.append({'name': name_lat_long_visit['name'], 
-                                    'lat': name_lat_long_visit['lat'], 
-                                    'long': name_lat_long_visit['long'],
-                                    'travel_time': day_plan['travel_time'],
-                                    'visit_time': name_lat_long_visit['visit_time'],
-                                    'time_windows': day_plan['time_window']})
+                # reference_dict[idx] = {'name':name, 'lat':lat, 'long':long, 'visit_time':visit_time}
+
+                day_plan_output.append({'name': name_lat_long_visit['name'], 
+                                        'lat': name_lat_long_visit['lat'], 
+                                        'long': name_lat_long_visit['long'],
+                                        'travel_time': location['travel_time']-name_lat_long_visit['visit_time'],
+                                        'visit_time': name_lat_long_visit['visit_time'],
+                                        'time_windows': location['time_window']})
             plan_output.append(day_plan_output)
 
         return plan_output, total_time
@@ -232,4 +262,6 @@ if __name__ == "__main__":
     locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 10), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60)]
 
     print(router(locations, [], False, 'car', 5))
+    pass
+
 
