@@ -2,8 +2,8 @@ import googlemaps
 import os
 from dotenv import load_dotenv
 import re
-import time
 
+import time
 import sqlite3
 
 # Load environment variables from .env file
@@ -364,7 +364,7 @@ def clean_matrix(place_ids, matrix):
         for j, destination in enumerate(matrix['destination_addresses']):
             # Get the distance and time between the origin and destination
             distance = matrix['rows'][i]['elements'][j]['distance']['value']
-            time = matrix['rows'][i]['elements'][j]['duration']['value']
+            time_X = matrix['rows'][i]['elements'][j]['duration']['value']
 
             # Save distance and time in arrays
             distances[i][j] = distance
@@ -485,6 +485,9 @@ def get_attractions_user_input(info):
     required_attractions = set()
     optional_attractions = set()
     places_unique = set()
+
+    max_iteration = 5 # Adjust in the future
+    iteration = 0
     
     for lat, lng in required_locations:
         city, country = get_city_country(lat, lng)
@@ -516,6 +519,7 @@ def get_attractions_user_input(info):
         for place in places['results']:
             # Get place details
             place_id = place['place_id']
+
             if (place['name'] in required_names):
                 required_attractions.add(place_id)      
 
@@ -537,10 +541,30 @@ def get_attractions_user_input(info):
             for category in category_details:
                 insert_categories(category[0], category[1])
 
+        # Get the details of lan and lng
+        req_place = gmaps.reverse_geocode((lat, lng))
+        req_id = req_place[0]['place_id']
+        req_details = gmaps.place(place_id = req_id, fields = fields)['result']
+        formatted_details, time_details, photo_details, category_details  = clean_data(req_details)
+        required_attractions.add(req_id)
+
+        if req_id not in places_unique:
+            places_unique.add(req_id)
+            optional_attractions.add(req_id)
+            insert_place(city_id, [formatted_details])
+            for time in time_details:
+                insert_time(time[0], time[1])
+            for photo in photo_details:
+                insert_photos(photo[0], photo[1], photo[2], photo[3])
+            for category in category_details:
+                insert_categories(category[0], category[1])
+
+
+
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = get_routes_simple(list(required_attractions))
+    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions))
     optional_info = get_routes_simple(list(optional_attractions))
     return required_info, optional_info
 
@@ -620,5 +644,8 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    names = {'must_locations': [('48.8606111', '2.337644'), ('48.85837009999999', '2.2944813')], 'must_names': ['Louvre Museum', 'Eiffel Tower'], 'ranking_considered': 'yes', 'Parks': 'exclude', 'Tourist Attractions': 'include', 'transport': 'car', 'budget': '1000', 'hotel': ('48.8687444', '2.3008389'), 'sleepTime': '21:00', 'wakeTime': '07:00', 'departureDate': '2024-06-10', 'departureTime': '12:00', 'numDays': '8'}
+    names = {'must_locations': [('43.981046', '5.562505')], 'must_names': ['Simiane-la-Rotonde'], 'ranking_considered': 'yes', 'Parks': 'include', 'Casinos': 'include', 'Tourist Attractions': 'exclude', 'transport': 'public transport', 'budget': '123', 'hotel': ('43.8815077', '5.3831174'), 'sleepTime': '20:59', 'wakeTime': '08:59', 'departureDate': '2024-05-14', 'departureTime': '14:59', 'numDays': '5'}
     required, optional = get_attractions_user_input(names)
+
+    #print(required, optional)
+    #print(len(required), len(optional))
