@@ -20,16 +20,22 @@ style %}main.css{% endset %} {% block body %}
   <div id="route-results" class="result-sections">
     <h2 class="result-title">Routes</h2>
     {% for route in routes %}
-    <div class="one-result">
+    <div class="one-result" id="route_{{loop.index}}">
       <h3>Day {{loop.index}}:</h3>
-      <div id="map{{loop.index}}" class="maps"></div>
-      <p>
-        {% for place in route[:route|length - 1] %} {{place['name']}} for
-        {{place['visit_time']}} minutes (Visit between
-        {{place['time_windows']}}) -> {% endfor %} {{ route[route|length -
-        1]['name'] }} for {{route[route|length - 1]['visit_time']}} minutes
-        (Visit between {{route[route|length - 1]['time_windows']}})
-      </p>
+      <div class="maps"></div>
+      {% for place in route[:route|length - 1] %}
+      <span id="{{place['name']}}${{place['lat']}}${{place['long']}}">
+        {{place['name']}} for {{place['visit_time']}} minutes (Visit between
+        {{place['time_windows']}}) ->
+      </span>
+      {% endfor %}
+      <span
+        id="{{route[route|length - 1]['name']}}${{route[route|length - 1]['lat']}}${{route[route|length - 1]['long']}}"
+      >
+        {{ route[route|length - 1]['name'] }} for {{route[route|length -
+        1]['visit_time']}} minutes (Visit between {{route[route|length -
+        1]['time_windows']}})
+      </span>
     </div>
     {% endfor %}
   </div>
@@ -38,6 +44,43 @@ style %}main.css{% endset %} {% block body %}
     async
     src="http://maps.googleapis.com/maps/api/js?v=3.exp&key={{google_key}}&sensor=false&libraries=places"
   ></script>
-  <script src="/static/js/results.js"></script>
+  <script>
+    const allMaps = document.getElementsByClassName("maps");
+    const allMapObjects = {};
+
+    window.addEventListener("load", (e) => {
+      // Make a map for every day
+      let i = 1;
+      let map, marker;
+      let div_holding_everything;
+      let spans_for_map;
+      let info, location;
+      for (const mapNode of allMaps) {
+        map = new google.maps.Map(mapNode, {
+          center: { lat: -34.397, lng: 150.644 },
+          zoom: 8,
+        });
+        allMapObjects[map] = [];
+
+        // Add markers for all the locations visited that day
+        div_holding_everything = document.getElementById("route_" + i);
+        spans_for_map = div_holding_everything.querySelectorAll("span");
+        for (let span of spans_for_map) {
+          info = span.id.split("$");
+          console.log(info);
+          location = { lat: parseFloat(info[1]), lng: parseFloat(info[2]) };
+          marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            title: info[0],
+          });
+          allMapObjects[map].push(marker);
+          map.setCenter(location);
+          map.setZoom(17);
+        }
+        i++;
+      }
+    });
+  </script>
 </div>
 {% endblock %}
