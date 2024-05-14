@@ -448,9 +448,9 @@ def get_average_time(place_id):
             counter += 1
     
     if counter != 0:
-        return time_spent / counter
+        return 2 * time_spent / counter
     else:
-        return 60 # 1 hour default
+        return 120 # 2 hour default
 
 
 
@@ -651,7 +651,7 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), 0, 1440, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])#, float(info['budget']))
+    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), sleep_time, wake_time, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])#, float(info['budget']))
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)#, float(info['budget']))
     
     # Reorder required_info based on the ranked attractions ids
