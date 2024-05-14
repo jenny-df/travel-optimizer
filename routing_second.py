@@ -131,8 +131,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
 
-        print(data["time_matrix"])
-        print(data["time_windows"])
+        # print(data["time_matrix"])
+        # print(data["time_windows"])
 
         plan = []
         for day_id in range(data["num_days"]):
@@ -285,6 +285,11 @@ def router(required_locations, optional_locations, ranking_considered, transport
             break_intervals[v],  # breaks
             v,  # vehicle index
             node_visit_transit)
+        
+    # Allow node dropping for locations that are optional - works with penalty of any size
+    penalty = 10
+    for node in optional_locations:
+        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
