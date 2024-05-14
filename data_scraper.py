@@ -28,26 +28,8 @@ fields = [
             'place_id'                                      # Unique identifier for the place
         ]
 
-time_spent_per_category = {
-    "Park": 2,
-    "Casino": 4,
-    "Museum": 3,
-    "Night Club": 3,
-    "Library": 1,
-    "Place of Worship": 0.75,
-    "Book Store": 0.5,
-    "Cemetery": 1.5,
-    "Stadium": 3,
-    "Zoo": 3,
-    "Aquarium": 2.5,
-    "Art Gallery": 2,
-    "Restaurant": 1.5,
-    "Bar": 1.5,
-    "Bakery": 0.5,
-    "Clothing Store": 0.5,
-    "Spa": 3,
-    "Amusement Park": 7,
-}
+time_spent_per_category = {'Park': 120, 'Casino': 240, 'Museum': 180, 'Night Club': 180, 'Library': 60, 'Place of Worship': 45.0, 'Book Store': 30.0, 'Cemetery': 90.0, 
+'Stadium': 180, 'Zoo': 180, 'Aquarium': 150.0, 'Art Gallery': 120, 'Restaurant': 90.0, 'Bar': 90.0, 'Bakery': 30.0, 'Clothing Store': 30.0, 'Spa': 180, 'Amusement Park': 420}
 
 def to_24_hour(time_unicode):
     '''
@@ -431,6 +413,33 @@ def get_routes(place_ids, mode = 'driving'):
             
     return distances, times
 
+
+def get_average_time(place_id):
+    '''
+    Get average time spent at a place based on the categories of the place
+    '''
+    conn = sqlite3.connect('Databases/travel.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM categories WHERE place_id = ?", (place_id,))
+    categories = cursor.fetchone()
+    time_spent = 0
+    counter = 0
+    for category in categories:
+        if category == 1:
+            if category not in time_spent_per_category:
+                continue
+            time_spent += time_spent_per_category[category]
+            counter += 1
+    
+    if counter != 0:
+        return time_spent / counter
+    else:
+        return 60 # 1 hour default
+
+
+
+
 def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filters_excluding):
     '''
     Returns longtitude latitude of the places with these ids
@@ -443,7 +452,7 @@ def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filte
     place_ids = categories_excluding_filter(place_ids, filters_excluding)
 
     # Get the places
-    cursor.execute("SELECT place_id, lat, lng FROM places WHERE place_id IN ({})".format(','.join(['?'] * len(place_ids))), place_ids)
+    cursor.execute("SELECT place_id, name, lat, lng FROM places WHERE place_id IN ({})".format(','.join(['?'] * len(place_ids))), place_ids)
     places = cursor.fetchall()
 
 
@@ -488,7 +497,8 @@ def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filte
             open = 1440
         if close > 1440:
             close = 1440
-        ans.append((place[0], place[1], place[2], open, close))
+        avg = get_average_time(place[0])
+        ans.append((place[0], place[1], place[2], place[3], open, close, avg))
     
     conn.commit()
     conn.close()
@@ -607,7 +617,7 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
+    required_info = [('HOTEL', info['hotel_name'], info['hotel_loc'][0], info['hotel_loc'][1], 0, 1440, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)
     return required_info, optional_info
 
@@ -687,14 +697,14 @@ def get_tourist_attractions(city):
 
 
 if __name__ == '__main__':
-    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '1231231', 'hotel': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': ['stadium', 'museum'], 'exclude': ['museum']}
+    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '1231231', 'hotel_name': 'balbla', 'hotel_loc': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': ['stadium', 'museum'], 'exclude': []}
     required, optional = get_attractions_user_input(names)
 
     ids = [place[0] for place in optional]
 
     filters = ['museum']
 
-    print(len(optional))
+    print(optional)
 
     #new = categories_including_filter(ids, filters)
     #print(ids)
