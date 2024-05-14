@@ -68,8 +68,6 @@ def results():
     for key in to_del:
         del data[key]
 
-    print(data)
-
     # Getting the required and optional locations based on data
     required, optional = get_attractions_user_input(data)
 

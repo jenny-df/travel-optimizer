@@ -13,7 +13,7 @@ style %}main.css{% endset %} {% block body %}
   {% else %}
   <div id="route-results" class="result-sections">
     <h2 class="result-title">Routes</h2>
-    {% for route in routes %}
+    <!-- {% for route in routes %}
     <div class="one-result">
       <h3>Day {{loop.index}}:</h3>
       <p>
@@ -21,7 +21,9 @@ style %}main.css{% endset %} {% block body %}
         route[route|length - 1] }}
       </p>
     </div>
-    {% endfor %}
+    {% endfor %} -->
+
+    {{routes}} {{total_trip_time}}
   </div>
   {% endif %}
 </div>
