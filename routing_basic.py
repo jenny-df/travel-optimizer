@@ -98,7 +98,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         return data
 
     # Prints solution in Terminal
-    # def return_solution(data, manager, routing, solution):
+    def return_solution(data, manager, routing, solution):
         print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
@@ -149,7 +149,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
                         'travel_time': solution.Min(time_var)})
             total_time += solution.Min(time_var)
             plan.append(day_plan)
-        # print(f"Total time of all routes: {total_time}min")
+        print(f"Total time of all routes: {total_time}min")
 
         plan_output = []
 
@@ -259,9 +259,10 @@ if __name__ == "__main__":
             #  ('k', 'ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629, 567, 987, 10),
             #  ('l', 'ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889, 4, 1434, 10)]
     
-    locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 10), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60)]
+    # locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 10), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60)]
 
-    print(router(locations, [], False, 'car', 5))
-    pass
+    locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+
+    # print(router(locations, [], False, 'car', 2))
 
 
