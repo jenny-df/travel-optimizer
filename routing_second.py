@@ -18,12 +18,19 @@ from data_scraper import *
 def router(required_locations, optional_locations, ranking_considered, transport_mode, days_traveled):
 
     """Convert inputs to correct format for VRP ---------------------------------------------------------------------------------------------------------------------"""
+    all_locations = required_locations + optional_locations
+
+    # used later to give drop option for these nodes
+    num_optional = len(optional_locations)
+
+    print(all_locations[-num_optional])
+    
     locations_for_distance_matrix = []
     time_windows = []
     reference_dict = {}
 
     idx=0
-    for location in required_locations:
+    for location in all_locations:
         id_, name,lat,longi, open_time, close, visit_time = location
         locations_for_distance_matrix.append((lat,longi))
         time_windows.append((open_time,close))
@@ -131,8 +138,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
 
-        # print(data["time_matrix"])
-        # print(data["time_windows"])
+        print(data["time_matrix"])
+        print(data["time_windows"])
 
         plan = []
         for day_id in range(data["num_days"]):
@@ -187,6 +194,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         # Aggregate travel time and visit time
         total_travel_time = 0
         total_visit_time = 0
+        sites = set()
 
         for day_plan in plan_output:
             # day_travel_time = 0
@@ -198,11 +206,13 @@ def router(required_locations, optional_locations, ranking_considered, transport
                 # print(location['name'], location['travel_time'])
                 # day_travel_time += location['travel_time']
                 day_visit_time += location['visit_time']
+                sites.add(location['name'])
             
             # total_travel_time += day_travel_time
             total_visit_time += day_visit_time
 
-        return plan_output, total_travel_time, total_visit_time
+        # return plan_output, total_travel_time, total_visit_time, num_sites_visited
+        return plan_output, total_travel_time, total_visit_time, len(sites)-1
 
         # return plan_output, total_travel_time, total_visit_time
         # for day_plan in plan_output:
@@ -277,7 +287,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
             routing.solver().FixedDurationIntervalVar(
                 0,  # start min
                 120,  # start max
-                10,  # duration: 10 min
+                reference_dict[v]['visit_time'],  # duration: visit time of place
                 False,  # optional: no
                 f'Break for vehicle {v}')
         ]
@@ -288,7 +298,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         
     # Allow node dropping for locations that are optional - works with penalty of any size
     penalty = 10
-    for node in optional_locations:
+    for node in all_locations[-num_optional]:
         routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
@@ -311,8 +321,10 @@ def router(required_locations, optional_locations, ranking_considered, transport
     if solution:
         return return_solution(data, manager, routing, solution)
     else:
-        return print("No solution found !")
+        return [],0,0
 
-locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60)]
 
-print(router(locations, [], False, 'car', 2))
+locations2 = [('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+
+print(router(locations, locations2, False, 'car', 2))
