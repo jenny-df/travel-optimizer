@@ -268,10 +268,13 @@ def router(required_locations, optional_locations, ranking_considered, transport
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
 
+    
     # # Add visit time breaks
     node_visit_transit = [0] * routing.Size()
     for index in range(routing.Size()-1):
         node = manager.IndexToNode(index)
+        print("here", index, len(node_visit_transit), len(reference_dict))
+        print(reference_dict[index])
         node_visit_transit[index] = reference_dict[index]['visit_time']
 
     break_intervals = {}

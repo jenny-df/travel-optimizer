@@ -2,12 +2,12 @@
 style %}main.css{% endset %} {% block body %}
 <div class="center_us">
   <br /><br />
-  <div id="TamarOutput">
+  <div id="TamarOutput" style="display: none">
     <h1>Tamar's output (delete after)</h1>
     <p>Required: {{required}}</p>
     <p>Optional: {{optional}}</p>
   </div>
-  <div id="AudreyOutput">
+  <div id="AudreyOutput" style="display: none">
     <h1>Audrey's output (delete after)</h1>
     <p>Routes: {{routes}}</p>
     <p>Total trip time: {{total_trip_time}}</p>
@@ -49,52 +49,45 @@ style %}main.css{% endset %} {% block body %}
     const allMapObjects = {};
 
     window.addEventListener("load", (e) => {
-      let i = 1;
-
       const googleMethods = new Map();
       googleMethods.set("car", google.maps.TravelMode.DRIVING);
       googleMethods.set("bike", google.maps.TravelMode.BICYCLING);
       googleMethods.set("walking", google.maps.TravelMode.WALKING);
       googleMethods.set("public transport", google.maps.TravelMode.TRANSIT);
 
+      let i = 1;
       let transportation = googleMethods.get("{{transport}}");
-      let map, marker, directionsService, directionsRenderer;
-      let div_holding_everything,
-        spans_for_map,
-        info,
-        location,
-        stops,
-        origin,
-        destination;
+      let maps = [];
 
       // Make one map for every day
       for (const mapNode of allMaps) {
-        map = new google.maps.Map(mapNode, {
+        let map = new google.maps.Map(mapNode, {
           center: { lat: -34.397, lng: 150.644 },
           zoom: 8,
         });
         allMapObjects[map] = [];
 
         // Router that will connect all the stops for the day
-        directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer();
+        let directionsService = new google.maps.DirectionsService();
+        let directionsRenderer = new google.maps.DirectionsRenderer();
         directionsRenderer.setMap(map);
+        allMapObjects[map].push(directionsService, directionsRenderer);
 
         // Add markers for all the locations visited that day
-        div_holding_everything = document.getElementById("route_" + i);
-        spans_for_map = div_holding_everything.querySelectorAll("span");
-        stops = [];
+        let div_holding_everything = document.getElementById("route_" + i);
+        let spans_for_map = div_holding_everything.querySelectorAll("span");
+        let stops = [];
         for (let span of spans_for_map) {
-          info = span.id.split("$");
+          let info = span.id.split("$");
           stops.push({
             location: { lat: parseFloat(info[1]), lng: parseFloat(info[2]) },
             stopover: true,
           });
         }
 
-        origin = stops.shift().location;
-        destination = stops.pop().location;
-        console.log(origin, destination, stops, transportation);
+        let origin = stops.shift().location;
+        let destination = stops.pop().location;
+
         directionsService.route(
           {
             origin: origin,
