@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, url_for, redirect
 import os
 from dotenv import load_dotenv
 from data_scraper import *
+from routing_basic import *
 
 
 app = Flask(__name__,
@@ -72,14 +73,12 @@ def results():
     # Getting the required and optional locations based on data
     required, optional = get_attractions_user_input(data)
 
-	# <TODO> Audrey: Call to classifier 
-    clustering_output = [["1.1", "1.2", "1.3"], ["2.1", "2.2"], ["3.1"]]
-    # <TODO> Audrey: Call to optimized routing
-    optimized_route_output = [["1.1", "2.1", "3.1", "2.2"], ["1.2", "1.3"]]
+    # Call to optimized routing
+    optimized_route_output, total_trip_time = router(required, optional, data['ranking_considered'] == "yes", data['transport'], int(data['numDays']))
 
     return render_template("results.html", 
-                        clusters = clustering_output, 
                         routes = optimized_route_output,
+                        total_trip_time = total_trip_time,
                         required = required,
                         optional = optional
                         )

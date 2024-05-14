@@ -8,20 +8,9 @@ style %}main.css{% endset %} {% block body %}
     <p>Optional: {{optional}}</p>
   </div>
   <h1>Results for your trip!</h1>
-  <div id="cluster-results" class="result-sections">
-    <h2 class="result-title">Clusters</h2>
-    {% for cluster in clusters %}
-    <div class="one-result">
-      <h3>Cluster {{loop.index}}:</h3>
-      <ul>
-        {% for place in cluster %}
-        <li>{{place}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endfor %}
-  </div>
-
+  {% if routes.length == 0 %}
+  <h2>No results found!</h2>
+  {% else %}
   <div id="route-results" class="result-sections">
     <h2 class="result-title">Routes</h2>
     {% for route in routes %}
@@ -34,5 +23,6 @@ style %}main.css{% endset %} {% block body %}
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 </div>
 {% endblock %}
