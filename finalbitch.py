@@ -35,7 +35,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         for from_counter, from_node in enumerate(locations):
             individual_node_distance = []
             for to_counter, to_node in enumerate(locations):
-    
+
                 if from_counter == to_counter:
                     individual_node_distance.append(0)
                 else:
@@ -73,10 +73,10 @@ def router(required_locations, optional_locations, ranking_considered, transport
         if transport_mode == 'bike':
             # 12 mph
             return([[int(0.003*length) for length in distance] for distance in distance_matrix])
-        
-    """Vehicle Routing Problem (VRP) with Time Windows ---------------------------------------------------------------------------------------------------------------------
 
-    Distances in terms of time in minutes
+    """Vehicle Routing Problem (VRP) with Time Windows
+
+    Distances in time in terms of minutes
     """
 
     # Create data model for Vehicle Routing Problem 
@@ -97,8 +97,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
         return data
 
-    # Prints solution in Terminal
-    def return_solution(data, manager, routing, solution):
+   # Prints solution in Terminal
+    # def return_solution(data, manager, routing, solution):
         print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
@@ -174,7 +174,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
         return plan_output, total_time
 
-  
+
     """Solve the VRP with time windows."""
     # Instantiate the data problem.
     data = create_data_model()
@@ -245,24 +245,9 @@ def router(required_locations, optional_locations, ranking_considered, transport
     else:
         return([],0)
 
+
 if __name__ == "__main__":
-    # locations = [('a', 'ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876, 60, 1200, 10), 
-            #  ('b', 'ChIJ2RFUePdYwokRd5R6XF6xFD0', 40.7651258, -73.97992359999999, 240, 1309, 10), 
-            #  ('c', 'ChIJ8VOfr1RYwokRhil9_pcMKuc', 40.7564269, -73.9888338, 320, 1200, 10), 
-            #  ('d', 'ChIJ9U1mz_5YwokRosza1aAk0jM', 40.7587402, -73.9786736, 180, 1054, 10), 
-            #  ('e', 'ChIJCXoPsPRYwokRsV1MYnKBfaI', 40.78132409999999, -73.9739882, 0, 1440, 10), 
-            #  ('f', 'ChIJEdN5k4lYwokRuNPGGOZUwOQ', 40.7805136, -73.9810847, 139, 1089, 10), 
-            #  ('g', 'ChIJHfPuClZYwokRP2wzLQjhuEI', 40.7601775, -73.9843631, 389, 1300, 10), 
-            #  ('h', 'ChIJK3vOQyNawokRXEa9errdJiU', 40.7060855, -73.9968643, 0, 1440, 10), 
-            #  ('i', 'ChIJKxDbe_lYwokRVf__s8CPn-o', 40.7614327, -73.97762159999999, 0, 700, 10), 
-            #  ('j', 'ChIJMf7Re8dZwokRJ0Nyj2IixlM', 40.745866, -74.006985, 701, 1300, 10), 
-            #  ('k', 'ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629, 567, 987, 10),
-            #  ('l', 'ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889, 4, 1434, 10)]
-    
-    # locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 10), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60)]
 
     locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
 
-    # print(router(locations, [], False, 'car', 2))
-
-
+    print(router(locations, [], False, 'car', 2))
