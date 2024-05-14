@@ -74,13 +74,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
             # 12 mph
             return([[int(0.003*length) for length in distance] for distance in distance_matrix])
         
-    # print(compute_time_matrix(transport_mode, distance_matrix))
-    # print(time_windows)
-    # Create time window matrix, a list of tuples where each tuple is (open time, closing time) in same order as each node appears in time_matrix
-    # time_windows = [(133, 831), (1071, 1374), (290, 827), (313, 1032), (12, 382), (1045, 1440), (72, 604), (348, 1086), (755, 1302), (434, 1012), (43, 659), (0,1440)]
-    # time_windows = [(start // 60, end // 60) for start, end in time_windows]
-
-
     """Vehicle Routing Problem (VRP) with Time Windows ---------------------------------------------------------------------------------------------------------------------
 
     Distances in terms of time in minutes
@@ -148,7 +141,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
                                     'time_windows': day_plan['time_window']})
             plan_output.append(day_plan_output)
 
-        return(plan_output, total_time)
+        return plan_output, total_time
 
 
 
@@ -169,7 +162,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         # Convert from routing variable Index to time matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return data["time_matrix"][from_node][to_node]
+        return data["time_matrix"][from_node][to_node] + reference_dict[to_index]['visit_time']
 
     transit_callback_index = routing.RegisterTransitCallback(time_callback)
 
