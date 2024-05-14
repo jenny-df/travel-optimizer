@@ -7,24 +7,37 @@ style %}main.css{% endset %} {% block body %}
     <p>Required: {{required}}</p>
     <p>Optional: {{optional}}</p>
   </div>
+  <div id="AudreyOutput">
+    <h1>Audrey's output (delete after)</h1>
+    <p>Routes: {{routes}}</p>
+    <p>Total trip time: {{total_trip_time}}</p>
+  </div>
+
   <h1>Results for your trip!</h1>
   {% if routes.length == 0 %}
   <h2>No results found!</h2>
   {% else %}
   <div id="route-results" class="result-sections">
     <h2 class="result-title">Routes</h2>
-    <!-- {% for route in routes %}
+    {% for route in routes %}
     <div class="one-result">
       <h3>Day {{loop.index}}:</h3>
+      <div id="map{{loop.index}}" class="maps"></div>
       <p>
-        {% for place in route[:route|length - 1] %} {{place}} -> {% endfor %} {{
-        route[route|length - 1] }}
+        {% for place in route[:route|length - 1] %} {{place['name']}} for
+        {{place['visit_time']}} minutes (Visit between
+        {{place['time_windows']}}) -> {% endfor %} {{ route[route|length -
+        1]['name'] }} for {{route[route|length - 1]['visit_time']}} minutes
+        (Visit between {{route[route|length - 1]['time_windows']}})
       </p>
     </div>
-    {% endfor %} -->
-
-    {{routes}} {{total_trip_time}}
+    {% endfor %}
   </div>
   {% endif %}
+  <script
+    async
+    src="http://maps.googleapis.com/maps/api/js?v=3.exp&key={{google_key}}&sensor=false&libraries=places"
+  ></script>
+  <script src="/static/js/results.js"></script>
 </div>
 {% endblock %}

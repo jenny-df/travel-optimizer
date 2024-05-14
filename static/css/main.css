@@ -196,7 +196,8 @@ label {
   font-size: large;
 }
 
-#map {
+#map,
+.maps {
   height: 50vh;
   width: 50vw;
   margin-left: auto;
