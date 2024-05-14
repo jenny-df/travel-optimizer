@@ -33,13 +33,9 @@
 3. If you pip install any packages that everyone should have, make sure only relevant stuff is downloaded (AND everything currently in the [requirements.txt](/requirements.txt) file) and then run `pip freeze > requirements.txt` to reflect the changes for everyone.
 
 ## Assumptions:
-
-- Users have 15 hours in a day available: 9 hours of sleep. We don't account for food (users might input locations for that)
-- Users spend one hour in each location
+- Users spend average time given the categories of the place in each location
+- We do not account for multiple opening close times throughout the day
+- For now, we are only suggesting up to 20 places to the user as optional.
 - No flights between locations
 
-## Todo List:
 
-- [ ] Autocomplete for the locations
-- [ ] Show a google map on demand for locations entered in the Data page
-- [ ] Show a google map for the route outputs and clusters in the Results page
