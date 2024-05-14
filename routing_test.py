@@ -126,15 +126,22 @@ connection.close()
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
+print(distance_matrix)
+print(time_windows)
+
+reference_dict = {0:{'visit_time':0}, 1:{'visit_time':60}, 2:{'visit_time':30}, 3:{'visit_time':45}, 4:{'visit_time':40}, 5:{'visit_time':60}, 
+                  6:{'visit_time':30}, 7:{'visit_time':60}, 8:{'visit_time':40}, 9:{'visit_time':30}, 10:{'visit_time':60}, 11:{'visit_time':30}, 12:{'visit_time':60}}
+print(reference_dict[2])
+
 # Create data model for Vehicle Routing Problem 
 def create_data_model():
     data = {}
 
     # square array with dimensions equal to the number of nodes, gives entry (i,j) is the time it takes to get from node i to node j
-    data["time_matrix"] = distance_matrix
+    data["time_matrix"] = [[0, 5, 1, 3, 4, 5, 4], [5, 0, 5, 9, 7, 9, 10], [1, 5, 0, 4, 3, 4, 5], [3, 9, 4, 0, 5, 5, 1], [4, 7, 3, 5, 0, 2, 5], [5, 9, 4, 5, 2, 0, 4], [4, 10, 5, 1, 5, 4, 0]]
 
     # list of tuples where each tuple is (open time, closing time) in same order as each node appears in time_matrix
-    data["time_windows"] = time_windows
+    data["time_windows"] = [(540, 1080), (540, 1020), (540, 1020), (540, 1020), (540, 1020), (420, 1140), (540, 1020)]
 
     # number of vehicles (days of travel, in our case)
     data["num_vehicles"] = 2
@@ -190,7 +197,8 @@ def main():
         # Convert from routing variable Index to time matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return data["time_matrix"][from_node][to_node]
+        time = data["time_matrix"][from_node][to_node]+ reference_dict[to_index]['visit_time']
+        return time
 
     transit_callback_index = routing.RegisterTransitCallback(time_callback)
 
@@ -220,6 +228,28 @@ def main():
         time_dimension.CumulVar(index).SetRange(
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
+
+    # Add visit time breaks
+    node_visit_transit = [0] * routing.Size()
+    for index in range(routing.Size()):
+        node = manager.IndexToNode(index)
+        node_visit_transit[index] = reference_dict[index]['visit_time']
+
+    break_intervals = {}
+    for v in range(manager.GetNumberOfVehicles()):
+        break_intervals[v] = [
+            routing.solver().FixedDurationIntervalVar(
+                50,  # start min
+                60,  # start max
+                10,  # duration: 10 min
+                False,  # optional: no
+                f'Break for vehicle {v}')
+        ]
+        time_dimension.SetBreakIntervalsOfVehicle(
+            break_intervals[v],  # breaks
+            v,  # vehicle index
+            node_visit_transit)
+
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_vehicles"]):
