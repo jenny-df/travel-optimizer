@@ -185,7 +185,9 @@ form {
 #sleepTime,
 #wakeTime,
 #arrivalDate,
-#arrivalTime {
+#arrivalTime,
+#transport,
+#budget {
   width: max-content;
   margin-right: 3vw;
 }
