@@ -34,6 +34,8 @@ def results():
     data['must_names'] = data['must_names'].split('$')
     data['hotel'] = tuple(data['hotel'].split("$"))
 
+    print(data)
+
     # Getting the required and optional locations based on data
     required, optional = get_attractions_user_input(data)
 
