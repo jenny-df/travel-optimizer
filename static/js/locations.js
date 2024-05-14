@@ -58,7 +58,6 @@ const data_form = document.getElementById("data-form");
 const all_locations = document.getElementById("must-locations");
 const all_names = document.getElementById("must-names");
 const location_search = document.getElementById("location-input");
-var hotel = document.getElementsByClassName("hotel")[0];
 
 data_form.addEventListener("submit", (e) => {
   var locs = [];
@@ -83,6 +82,5 @@ data_form.addEventListener("submit", (e) => {
     // reach the backend when the submission goes through after this.
     all_locations.value = locs.join("*");
     all_names.value = names.join("$");
-    hotel.value = hotel.id;
   }
 });

@@ -35,13 +35,13 @@
         <div class="sub-radios">
           <input
             type="radio"
-            name="{{category}}"
+            name="{{categories[category]}}"
             value="include"
             class="include_categories"
           />
           <input
             type="radio"
-            name="{{category}}"
+            name="{{categories[category]}}"
             value="exclude"
             class="exclude_categories"
           />
@@ -70,9 +70,10 @@
       <br />
     </div>
     <div>
-      <label for="hotel">Hotel:</label>
+      <label for="hotel_input">Hotel:</label>
       <br />
-      <input name="hotel" class="hotel" />
+      <input type="text" name="hotel_input" class="hotel_input" required />
+      <input type="hidden" name="hotel" class="hotel" />
       <br />
     </div>
     <div>
