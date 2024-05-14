@@ -145,6 +145,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
                         'travel_time': solution.Min(time_var)})
             total_time += solution.Min(time_var)
             plan.append(day_plan)
+        print(f"Total time of all routes: {total_time}min")
 
         plan_output = []
 
@@ -186,7 +187,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
             day_visit_time = 0
 
             for location in day_plan:
-                # print(location['name'], location['travel_time'])
+                print(location['name'], location['travel_time'])
                 day_travel_time += location['travel_time']
                 day_visit_time += location['visit_time']
             
@@ -267,6 +268,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
     else:
         return print("No solution found !")
 
-# locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
 
-# print(router(locations, [], False, 'car', 2))
+locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+
+print(router(locations, [], False, 'walking', 2))
