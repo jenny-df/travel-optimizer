@@ -51,7 +51,9 @@ def results():
     data = dict(request.form)
     data['must_locations'] = [tuple(info.split("$")) for info in data['must_locations'].split('*')]
     data['must_names'] = data['must_names'].split('$')
-    data['hotel'] = tuple(data['hotel'].split("$"))
+    tmp = data['hotel'].split("$")
+    data['hotel_loc'] = (tmp[0], tmp[1])
+    data['hotel_name'] = tmp[2]
 
     # Reformatting categories chosen by user
     data['include'] = []
