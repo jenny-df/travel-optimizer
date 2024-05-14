@@ -136,14 +136,12 @@ def router(required_locations, optional_locations, ranking_considered, transport
             while not routing.IsEnd(index):
                 #Cumulative travel time when a vehicle arrives at the location with the given index
                 time_var = time_dimension.CumulVar(index)
-                day_plan.append({'node_number':manager.IndexToNode(index), 
-                                    'time_window':(solution.Min(time_var), solution.Max(time_var)),
+                day_plan.append({'node_number':manager.IndexToNode(index),
                                     'travel_time': solution.Min(time_var)})
 
                 index = solution.Value(routing.NextVar(index))
             time_var = time_dimension.CumulVar(index)
-            day_plan.append({'node_number':manager.IndexToNode(index), 
-                        'time_window':(solution.Min(time_var), solution.Max(time_var)),
+            day_plan.append({'node_number':manager.IndexToNode(index),
                         'travel_time': solution.Min(time_var)})
             total_time += solution.Min(time_var)
             plan.append(day_plan)
@@ -166,8 +164,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
                                         'lat': name_lat_long_visit['lat'], 
                                         'long': name_lat_long_visit['long'],
                                         'travel_time': location['travel_time']-name_lat_long_visit['visit_time'],
-                                        'visit_time': name_lat_long_visit['visit_time'],
-                                        'time_windows': location['time_window']})
+                                        'visit_time': name_lat_long_visit['visit_time']})
             plan_output.append(day_plan_output)
 
         
