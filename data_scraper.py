@@ -327,45 +327,34 @@ def add_category_column(conn, cursor, category):
 
     conn.commit()
 
-def categories_including_filter(filters):
+def categories_including_filter(all_place_ids, filters):
     '''
     Returns a list of places filtered by the categories in filters
     '''
 
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
-
-    # Get place_ids of places that have at least one category in filters
-    place_ids = set()
-    for category in filters:
-        cursor.execute(f"SELECT place_id FROM categories WHERE {category} = 1")
-        place_ids.update([place[0] for place in cursor.fetchall()])
+    all_place_id_str = ', '.join(['?' for _ in range(len(all_place_ids))])
+    query = f"SELECT place_id FROM categories WHERE {' AND '.join([f'{category} = 1' for category in filters])} AND place_id IN ({all_place_id_str})"
+    cursor.execute(query, all_place_ids)
+    place_ids = set([place[0] for place in cursor.fetchall()])
     
     conn.commit()
     conn.close()
     
     return place_ids
 
-def categories_excluding_filter(filters):
+def categories_excluding_filter(all_place_ids, filters):
     '''
     Returns a list of places filtered by the categories not in filters
     '''
 
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
-
-    # Get place_ids of places that have at least one category in filters
-    place_ids = set()
-    for category in filters:
-        cursor.execute(f"SELECT place_id FROM categories WHERE {category} = 1")
-        place_ids.update([place[0] for place in cursor.fetchall()])
-    
-    # Get all place_ids
-    cursor.execute("SELECT place_id FROM categories")
-    all_place_ids = set([place[0] for place in cursor.fetchall()])
-
-    # Get place_ids that are not in filters
-    place_ids = all_place_ids - place_ids
+    all_place_id_str = ', '.join(['?' for _ in range(len(all_place_ids))])
+    query = f"SELECT place_id FROM categories WHERE place_id IN ({all_place_id_str}) AND {' AND '.join([f'{category} = 1' for category in filters if category not in filters])}"
+    cursor.execute(query, all_place_ids)
+    place_ids = set([place[0] for place in cursor.fetchall()])
     
     conn.commit()
     conn.close()
@@ -588,6 +577,9 @@ def get_attractions_user_input(info):
 
     required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions), sleep_time, wake_time)
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time)
+
+    
+
     return required_info, optional_info
 
 
@@ -669,5 +661,5 @@ if __name__ == '__main__':
     names = {'must_locations': [('43.981046', '5.562505')], 'must_names': ['Simiane-la-Rotonde'], 'ranking_considered': 'yes', 'Parks': 'include', 'Casinos': 'include', 'Tourist Attractions': 'exclude', 'transport': 'public transport', 'budget': '123', 'hotel': ('43.8815077', '5.3831174'), 'sleepTime': '20:59', 'wakeTime': '08:59', 'departureDate': '2024-05-14', 'departureTime': '14:59', 'numDays': '5'}
     required, optional = get_attractions_user_input(names)
 
-    #print(required, optional)
+    print(optional)
     #print(len(required), len(optional))
