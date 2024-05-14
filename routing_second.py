@@ -131,8 +131,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
 
-        # print(data["time_matrix"])
-        # print(data["time_windows"])
+        print(data["time_matrix"])
+        print(data["time_windows"])
 
         plan = []
         for day_id in range(data["num_days"]):
@@ -187,6 +187,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         # Aggregate travel time and visit time
         total_travel_time = 0
         total_visit_time = 0
+        sites = set()
 
         for day_plan in plan_output:
             # day_travel_time = 0
@@ -198,11 +199,13 @@ def router(required_locations, optional_locations, ranking_considered, transport
                 # print(location['name'], location['travel_time'])
                 # day_travel_time += location['travel_time']
                 day_visit_time += location['visit_time']
+                sites.add(location['name'])
             
             # total_travel_time += day_travel_time
             total_visit_time += day_visit_time
 
-        return plan_output, total_travel_time, total_visit_time
+        # return plan_output, total_travel_time, total_visit_time, num_sites_visited
+        return plan_output, total_travel_time, total_visit_time, len(sites)-1
 
         # return plan_output, total_travel_time, total_visit_time
         # for day_plan in plan_output:
@@ -224,6 +227,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
+
+    print('ROUTING SIZE', routing.Size())
 
     # Create and register a transit callback.
     def time_callback(from_index, to_index):
@@ -265,7 +270,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
 
-    # # Add visit time breaks
+    # Add visit time breaks
     node_visit_transit = [0] * routing.Size()
     for index in range(routing.Size()-1):
         node = manager.IndexToNode(index)
@@ -285,11 +290,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
             break_intervals[v],  # breaks
             v,  # vehicle index
             node_visit_transit)
-        
-    # Allow node dropping for locations that are optional - works with penalty of any size
-    penalty = 10
-    for node in optional_locations:
-        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
@@ -311,7 +311,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
     if solution:
         return return_solution(data, manager, routing, solution)
     else:
-        return print("No solution found !")
+        return [],0,0
 
 locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
 
