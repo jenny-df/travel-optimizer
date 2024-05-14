@@ -131,8 +131,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
 
-        print(data["time_matrix"])
-        print(data["time_windows"])
+        # print(data["time_matrix"])
+        # print(data["time_windows"])
 
         plan = []
         for day_id in range(data["num_days"]):
@@ -187,7 +187,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
         # Aggregate travel time and visit time
         total_travel_time = 0
         total_visit_time = 0
-        sites = set()
 
         for day_plan in plan_output:
             # day_travel_time = 0
@@ -199,13 +198,11 @@ def router(required_locations, optional_locations, ranking_considered, transport
                 # print(location['name'], location['travel_time'])
                 # day_travel_time += location['travel_time']
                 day_visit_time += location['visit_time']
-                sites.add(location['name'])
             
             # total_travel_time += day_travel_time
             total_visit_time += day_visit_time
 
-        # return plan_output, total_travel_time, total_visit_time, num_sites_visited
-        return plan_output, total_travel_time, total_visit_time, len(sites)-1
+        return plan_output, total_travel_time, total_visit_time
 
         # return plan_output, total_travel_time, total_visit_time
         # for day_plan in plan_output:
@@ -288,6 +285,11 @@ def router(required_locations, optional_locations, ranking_considered, transport
             break_intervals[v],  # breaks
             v,  # vehicle index
             node_visit_transit)
+        
+    # Allow node dropping for locations that are optional - works with penalty of any size
+    penalty = 10
+    for node in optional_locations:
+        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
