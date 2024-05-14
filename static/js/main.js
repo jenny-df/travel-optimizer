@@ -16,8 +16,8 @@ var now = new Date();
 var currentDate = now.toISOString().split("T")[0];
 now.setFullYear(now.getFullYear() + 3);
 var farFutureDate = now.toISOString().split("T")[0];
-document.getElementById("departureDate").setAttribute("min", currentDate);
-document.getElementById("departureDate").setAttribute("max", farFutureDate);
+document.getElementById("arrivalDate").setAttribute("min", currentDate);
+document.getElementById("arrivalDate").setAttribute("max", farFutureDate);
 
 ////////////////////////////// GOOGLE API //////////////////////////////
 
