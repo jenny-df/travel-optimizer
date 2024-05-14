@@ -98,7 +98,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         return data
 
    # Prints solution in Terminal
-    # def return_solution(data, manager, routing, solution):
+    def return_solution(data, manager, routing, solution):
         print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
@@ -124,7 +124,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         print(f"Total time of all routes: {total_time}min")
 
     # Prints solution in Terminal
-    def return_solution(data, manager, routing, solution):
+    # def return_solution(data, manager, routing, solution):
         # print(f"Objective (sum of the arcs/travel costs along the edges, which we are minimizing): {solution.ObjectiveValue()}")
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
