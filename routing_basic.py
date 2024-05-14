@@ -222,20 +222,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
     else:
         return([],0)
 
-locations = [('a', 'ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876, 60, 1200, 10), 
-             ('b', 'ChIJ2RFUePdYwokRd5R6XF6xFD0', 40.7651258, -73.97992359999999, 240, 1309, 10), 
-             ('c', 'ChIJ8VOfr1RYwokRhil9_pcMKuc', 40.7564269, -73.9888338, 320, 1200, 10), 
-             ('d', 'ChIJ9U1mz_5YwokRosza1aAk0jM', 40.7587402, -73.9786736, 180, 1054, 10), 
-             ('e', 'ChIJCXoPsPRYwokRsV1MYnKBfaI', 40.78132409999999, -73.9739882, 0, 1440, 10), 
-             ('f', 'ChIJEdN5k4lYwokRuNPGGOZUwOQ', 40.7805136, -73.9810847, 139, 1089, 10), 
-             ('g', 'ChIJHfPuClZYwokRP2wzLQjhuEI', 40.7601775, -73.9843631, 389, 1300, 10), 
-             ('h', 'ChIJK3vOQyNawokRXEa9errdJiU', 40.7060855, -73.9968643, 0, 1440, 10), 
-             ('i', 'ChIJKxDbe_lYwokRVf__s8CPn-o', 40.7614327, -73.97762159999999, 0, 700, 10), 
-             ('j', 'ChIJMf7Re8dZwokRJ0Nyj2IixlM', 40.745866, -74.006985, 701, 1300, 10), 
-             ('k', 'ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629, 567, 987, 10),
-             ('l', 'ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889, 4, 1434, 10)]
-
-print(router(locations, [], False, 'car', 5))
 
 # if __name__ == "__main__":
 #     main()
