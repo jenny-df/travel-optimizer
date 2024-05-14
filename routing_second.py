@@ -18,12 +18,19 @@ from data_scraper import *
 def router(required_locations, optional_locations, ranking_considered, transport_mode, days_traveled):
 
     """Convert inputs to correct format for VRP ---------------------------------------------------------------------------------------------------------------------"""
+    all_locations = required_locations + optional_locations
+
+    # used later to give drop option for these nodes
+    num_optional = len(optional_locations)
+
+    print(all_locations[-num_optional])
+    
     locations_for_distance_matrix = []
     time_windows = []
     reference_dict = {}
 
     idx=0
-    for location in required_locations:
+    for location in all_locations:
         id_, name,lat,longi, open_time, close, visit_time = location
         locations_for_distance_matrix.append((lat,longi))
         time_windows.append((open_time,close))
@@ -228,8 +235,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
 
-    print('ROUTING SIZE', routing.Size())
-
     # Create and register a transit callback.
     def time_callback(from_index, to_index):
         """Returns the travel time between the two nodes (set to minutes)."""
@@ -270,7 +275,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
 
-    # Add visit time breaks
+    # # Add visit time breaks
     node_visit_transit = [0] * routing.Size()
     for index in range(routing.Size()-1):
         node = manager.IndexToNode(index)
@@ -282,7 +287,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
             routing.solver().FixedDurationIntervalVar(
                 0,  # start min
                 120,  # start max
-                10,  # duration: 10 min
+                reference_dict[v]['visit_time'],  # duration: visit time of place
                 False,  # optional: no
                 f'Break for vehicle {v}')
         ]
@@ -290,6 +295,11 @@ def router(required_locations, optional_locations, ranking_considered, transport
             break_intervals[v],  # breaks
             v,  # vehicle index
             node_visit_transit)
+        
+    # Allow node dropping for locations that are optional - works with penalty of any size
+    penalty = 10
+    for node in all_locations[-num_optional]:
+        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
@@ -313,6 +323,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
     else:
         return [],0,0
 
-locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60)]
 
-print(router(locations, [], False, 'car', 2))
+locations2 = [('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+
+print(router(locations, locations2, False, 'car', 2))
