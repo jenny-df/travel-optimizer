@@ -99,8 +99,9 @@ window.addEventListener("load", (e) => {
   });
 
   // Autocomplete for hotel location
-  var hotel_input = document.getElementsByClassName("hotel")[0];
+  var hotel_input = document.getElementsByClassName("hotel_input")[0];
   var hotel_autocomplete = new google.maps.places.Autocomplete(hotel_input);
+  var hotel = document.getElementsByClassName("hotel")[0];
 
   // Listener for when a users selects an option from the autocomplete
   // dropdown menu.
@@ -115,7 +116,7 @@ window.addEventListener("load", (e) => {
     const latitude = place.geometry.location.lat();
     const longitude = place.geometry.location.lng();
 
-    hotel_input.id = latitude + "$" + longitude;
+    hotel.value = latitude + "$" + longitude;
 
     // Remove previous hotel (if applicable)
     if (hotel_name !== "") {

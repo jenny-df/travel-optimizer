@@ -28,6 +28,27 @@ fields = [
             'place_id'                                      # Unique identifier for the place
         ]
 
+time_spent_per_category = {
+    "Park": 2,
+    "Casino": 4,
+    "Museum": 3,
+    "Night Club": 3,
+    "Library": 1,
+    "Place of Worship": 0.75,
+    "Book Store": 0.5,
+    "Cemetery": 1.5,
+    "Stadium": 3,
+    "Zoo": 3,
+    "Aquarium": 2.5,
+    "Art Gallery": 2,
+    "Restaurant": 1.5,
+    "Bar": 1.5,
+    "Bakery": 0.5,
+    "Clothing Store": 0.5,
+    "Spa": 3,
+    "Amusement Park": 7,
+}
+
 def to_24_hour(time_unicode):
     '''
     Converts a time string from 12-hour format to 24-hour format

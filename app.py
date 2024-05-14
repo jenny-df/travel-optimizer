@@ -12,6 +12,29 @@ app = Flask(__name__,
 app.config.from_pyfile('config.py')
 load_dotenv()
 
+categories = {
+    "Park": "park",
+    "Casino": "casino",
+    "Museum": "museum",
+    "Night Club": "night_club",
+    "Library": "library",
+    "Place of Worship": "place_of_worship",
+    "Book Store": "book_store",
+    "Cemetery": "cemetery",
+    "Stadium": "stadium",
+    "Zoo": "zoo",
+    "Aquarium": "aquarium",
+    "Art Gallery": "art_gallery",
+    "Restaurant": "restaurant",
+    "Bar": "bar",
+    "Bakery": "bakery",
+    "Clothing Store": "clothing_store",
+    "Spa": "spa",
+    "Amusement Park": "amusement_park",
+}
+
+valid_categories = set(categories.values())
+
 @app.route('/', methods = ["GET"])
 def home():
     return render_template("home.html")
@@ -19,8 +42,6 @@ def home():
 
 @app.route('/data', methods = ["GET"])
 def data():
-    # <TODO> Tamar: Get all categories
-    categories = ['Parks', 'Casinos', 'Tourist Attractions']
     return render_template("data.html", categories=categories, google_key=os.getenv('GOOGLE_MAPS_API_KEY'))
 
 
@@ -28,11 +49,21 @@ def data():
 def results():
     # Getting values from the form
     data = dict(request.form)
-    del data['Submit']
-    del data['location_search']
     data['must_locations'] = [tuple(info.split("$")) for info in data['must_locations'].split('*')]
     data['must_names'] = data['must_names'].split('$')
     data['hotel'] = tuple(data['hotel'].split("$"))
+
+    # Reformatting categories chosen by user
+    data['include'] = []
+    data['exclude'] = []
+    for key in data:
+        if key in valid_categories:
+            data[data[key]].append(key)
+
+    # Deleting unnecessary data
+    to_del = data['include'] + data['exclude'] + ['Submit', 'location_search', 'hotel_input']
+    for key in to_del:
+        del data[key]
 
     print(data)
 
