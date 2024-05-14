@@ -36,6 +36,8 @@ categories = {
 
 valid_categories = set(categories.values())
 
+GOOGLE_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
+
 @app.route('/', methods = ["GET"])
 def home():
     return render_template("home.html")
@@ -43,7 +45,7 @@ def home():
 
 @app.route('/data', methods = ["GET"])
 def data():
-    return render_template("data.html", categories=categories, google_key=os.getenv('GOOGLE_MAPS_API_KEY'))
+    return render_template("data.html", categories=categories, google_key=GOOGLE_KEY)
 
 
 @app.route('/results', methods = ["POST"])
@@ -78,7 +80,8 @@ def results():
                         routes = optimized_route_output,
                         total_trip_time = total_trip_time,
                         required = required,
-                        optional = optional
+                        optional = optional,
+                        google_key = GOOGLE_KEY,
                         )
 
 
