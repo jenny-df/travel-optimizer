@@ -29,6 +29,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_windows.append((open_time,close))
         reference_dict[idx] = {'name':name, 'lat':lat, 'long':longi, 'visit_time':visit_time}
         idx+=1
+        
+    # print(reference_dict)
 
     def compute_distance_matrix(locations):
         """Creates callback to return Haversine distance between points."""
@@ -95,6 +97,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
         return data
 
+    
+
     # Prints solution in Terminal
     # def print_solution(data, manager, routing, solution):
         print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
@@ -126,6 +130,9 @@ def router(required_locations, optional_locations, ranking_considered, transport
         # print(f"Objective (sum of the arcs/travel costs along the edges, which we are minimizing): {solution.ObjectiveValue()}")
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
+
+        # print(data["time_matrix"])
+        # print(data["time_windows"])
 
         plan = []
         for day_id in range(data["num_days"]):
@@ -170,12 +177,12 @@ def router(required_locations, optional_locations, ranking_considered, transport
         # Adjust times by first travel time
         # For each day, get first time window of second location then subtract this time from all travel_times and travel_window starting from second location of the day
         
-        for day_plan in plan_output: 
+        # for day_plan in plan_output: 
 
-            second_loc_tw1 = day_plan[1]['travel_time']
+        #     second_loc_tw1 = day_plan[1]['travel_time']
 
-            for loc_idx in range(1,len(day_plan)):
-                day_plan[loc_idx]['travel_time'] -= second_loc_tw1
+        #     for loc_idx in range(1,len(day_plan)):
+        #         day_plan[loc_idx]['travel_time'] -= second_loc_tw1
 
         # Aggregate travel time and visit time
         total_travel_time = 0
@@ -183,20 +190,31 @@ def router(required_locations, optional_locations, ranking_considered, transport
         sites = set()
 
         for day_plan in plan_output:
-            day_travel_time = 0
+            # day_travel_time = 0
             day_visit_time = 0
+
+            total_travel_time = day_plan[-1]['travel_time'] - day_plan[0]['travel_time']
 
             for location in day_plan:
                 # print(location['name'], location['travel_time'])
-                day_travel_time += location['travel_time']
+                # day_travel_time += location['travel_time']
                 day_visit_time += location['visit_time']
                 sites.add(location['name'])
             
-            total_travel_time += day_travel_time
+            # total_travel_time += day_travel_time
             total_visit_time += day_visit_time
 
         # return plan_output, total_travel_time, total_visit_time, num_sites_visited
         return plan_output, total_travel_time, total_visit_time, len(sites)-1
+
+        # return plan_output, total_travel_time, total_visit_time
+        # for day_plan in plan_output:
+        #     for loc in day_plan:
+        #         print(loc)
+        # print(total_travel_time, total_visit_time)
+        # print()
+
+
 
     """Solve the VRP with time windows."""
     # Instantiate the data problem.
@@ -212,11 +230,13 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
     # Create and register a transit callback.
     def time_callback(from_index, to_index):
-        """Returns the travel time between the two nodes (set to hours)."""
+        """Returns the travel time between the two nodes (set to minutes)."""
         # Convert from routing variable Index to time matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return data["time_matrix"][from_node][to_node]
+        time = data["time_matrix"][from_node][to_node] 
+        # + reference_dict[to_index]['visit_time']
+        return time
 
     transit_callback_index = routing.RegisterTransitCallback(time_callback)
 
@@ -233,6 +253,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time,
     )
     time_dimension = routing.GetDimensionOrDie(time)
+
     # Add time window constraints for each location except depot.
     for location_idx, time_window in enumerate(data["time_windows"]):
         if location_idx == data["depot"]:
@@ -246,6 +267,27 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_dimension.CumulVar(index).SetRange(
             data["time_windows"][depot_idx][0], data["time_windows"][depot_idx][1]
         )
+
+    # # Add visit time breaks
+    node_visit_transit = [0] * routing.Size()
+    for index in range(routing.Size()-1):
+        node = manager.IndexToNode(index)
+        node_visit_transit[index] = reference_dict[index]['visit_time']
+
+    break_intervals = {}
+    for v in range(manager.GetNumberOfVehicles()):
+        break_intervals[v] = [
+            routing.solver().FixedDurationIntervalVar(
+                0,  # start min
+                120,  # start max
+                10,  # duration: 10 min
+                False,  # optional: no
+                f'Break for vehicle {v}')
+        ]
+        time_dimension.SetBreakIntervalsOfVehicle(
+            break_intervals[v],  # breaks
+            v,  # vehicle index
+            node_visit_transit)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
@@ -269,6 +311,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
     else:
         return print("No solution found !")
 
-# locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 0, 1440, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
+locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
 
-# print(router(locations, [], False, 'car', 2))
+print(router(locations, [], False, 'car', 2))
