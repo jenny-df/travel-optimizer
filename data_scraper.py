@@ -463,8 +463,12 @@ def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filte
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
 
+    #print("Before any filtering", place_ids, "\n\n")
     place_ids = categories_including_filter(place_ids, filters_including)
+    #print("include filtering", place_ids, "\n\n")
     place_ids = categories_excluding_filter(place_ids, filters_excluding)
+    #print("exclude filtering", place_ids, "\n\n")
+
 
     # Get the places
     cursor.execute("SELECT place_id, name, lat, lng FROM places WHERE place_id IN ({})".format(','.join(['?'] * len(place_ids))), place_ids)
@@ -642,6 +646,7 @@ def get_attractions_user_input(info):
 
     required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), 0, 1440, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)
+    print(required_info, optional_info)
     return required_info, optional_info
 
 
