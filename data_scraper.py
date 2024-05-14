@@ -370,6 +370,21 @@ def categories_excluding_filter(all_place_ids, filters):
     
     return list(place_ids)
 
+def budget_filter(all_place_ids, budget):
+    '''
+    Returns a list of places filtered by the budget
+    '''
+    conn = sqlite3.connect('Databases/travel.db')
+    cursor = conn.cursor()
+    query = f"SELECT place_id FROM places WHERE (price_level <= ? OR price_level IS NULL) AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
+    cursor.execute(query, (budget, all_place_ids))
+    place_ids = set([place[0] for place in cursor.fetchall()])
+    
+    conn.commit()
+    conn.close()
+    
+    return list(place_ids)
+
 def clean_matrix(place_ids, matrix):
     '''
     Cleans the distance matrix into distance and time matrix
@@ -541,10 +556,17 @@ def get_attractions_user_input(info):
 
     max_iteration = 5 # Adjust in the future
     iteration = 0
-    
+
+    conn = sqlite3.connect('Databases/travel.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT place_id FROM places")
+    all_ids = cursor.fetchall()
+    places_unique = set([place[0] for place in all_ids])
+    conn.commit()
+    conn.close()
+
     for lat, lng in required_locations:
         city, country = get_city_country(lat, lng)
-
         if city_exists(city):
             # Get the place_ids in the city
             conn = sqlite3.connect('Databases/travel.db')
@@ -552,9 +574,11 @@ def get_attractions_user_input(info):
             cursor.execute("SELECT place_id, city_id FROM places WHERE city_id = (SELECT id FROM cities WHERE name = ?)", (city,))
             all_places = cursor.fetchall()
             place_ids = [place[0] for place in all_places]
+            print(all_places)
             city_id = all_places[0][1]
             places_unique.update(place_ids)
             optional_attractions.update(place_ids)
+            conn.commit()
             conn.close()
         else:
             city_id = insert_city(city, country)
