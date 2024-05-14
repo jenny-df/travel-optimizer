@@ -21,27 +21,27 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
     idx=0
     for location in required_locations:
-        name, id,lat,long, open, close, visit_time = location
-        locations_for_distance_matrix.append((lat,long))
-        time_windows.append((open,close))
-        reference_dict[idx] = {'name':name, 'lat':lat, 'long':long, 'visit_time':visit_time}
+        id_, name,lat,longi, open_time, close, visit_time = location
+        locations_for_distance_matrix.append((lat,longi))
+        time_windows.append((open_time,close))
+        reference_dict[idx] = {'name':name, 'lat':lat, 'long':longi, 'visit_time':visit_time}
         idx+=1
 
     def compute_distance_matrix(locations):
         """Creates callback to return Haversine distance between points."""
         R = 6371e3  # Earth's mean radius in meters
         distances = []
+
         for from_counter, from_node in enumerate(locations):
             individual_node_distance = []
             for to_counter, to_node in enumerate(locations):
+    
                 if from_counter == to_counter:
                     individual_node_distance.append(0)
                 else:
                     # Use Haversine formula to compute the shortest distance over the earth’s surface between locations
-                    lat1 = to_node[0]
-                    lat2 = from_node[0]
-                    lon1 = to_node[1]
-                    lon2 = from_node[1]
+                    lat1, lon1 = to_node
+                    lat2, lon2 = from_node
 
                     phi1 = lat1 * math.pi / 180  # phi, lambda in radians
                     phi2 = lat2 * math.pi / 180
