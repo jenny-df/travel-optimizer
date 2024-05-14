@@ -377,7 +377,7 @@ def budget_filter(all_place_ids, budget):
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
     query = f"SELECT place_id FROM places WHERE (price_level < ? OR price_level IS NULL) AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
-    cursor.execute(query, (budget, all_place_ids))
+    cursor.execute(query, (budget,) + tuple(all_place_ids))
     place_ids = set([place[0] for place in cursor.fetchall()])
     
     conn.commit()
@@ -468,7 +468,7 @@ def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filte
     #print("include filtering", place_ids, "\n\n")
     place_ids = categories_excluding_filter(place_ids, filters_excluding)
     #print("exclude filtering", place_ids, "\n\n")
-    #place_ids = budget_filter(place_ids, budget_level)
+    place_ids = budget_filter(place_ids, budget_level)
 
 
     # Get the places
