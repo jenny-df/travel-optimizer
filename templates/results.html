@@ -49,12 +49,25 @@ style %}main.css{% endset %} {% block body %}
     const allMapObjects = {};
 
     window.addEventListener("load", (e) => {
-      // Make a map for every day
       let i = 1;
-      let map, marker;
-      let div_holding_everything;
-      let spans_for_map;
-      let info, location;
+
+      const googleMethods = new Map();
+      googleMethods.set("car", google.maps.TravelMode.DRIVING);
+      googleMethods.set("bike", google.maps.TravelMode.BICYCLING);
+      googleMethods.set("walking", google.maps.TravelMode.WALKING);
+      googleMethods.set("public transport", google.maps.TravelMode.TRANSIT);
+
+      let transportation = googleMethods.get("{{transport}}");
+      let map, marker, directionsService, directionsRenderer;
+      let div_holding_everything,
+        spans_for_map,
+        info,
+        location,
+        stops,
+        origin,
+        destination;
+
+      // Make one map for every day
       for (const mapNode of allMaps) {
         map = new google.maps.Map(mapNode, {
           center: { lat: -34.397, lng: 150.644 },
@@ -62,22 +75,44 @@ style %}main.css{% endset %} {% block body %}
         });
         allMapObjects[map] = [];
 
+        // Router that will connect all the stops for the day
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer();
+        directionsRenderer.setMap(map);
+
         // Add markers for all the locations visited that day
         div_holding_everything = document.getElementById("route_" + i);
         spans_for_map = div_holding_everything.querySelectorAll("span");
+        stops = [];
         for (let span of spans_for_map) {
           info = span.id.split("$");
-          console.log(info);
-          location = { lat: parseFloat(info[1]), lng: parseFloat(info[2]) };
-          marker = new google.maps.Marker({
-            position: location,
-            map: map,
-            title: info[0],
+          stops.push({
+            location: { lat: parseFloat(info[1]), lng: parseFloat(info[2]) },
+            stopover: true,
+            name: info[0],
           });
-          allMapObjects[map].push(marker);
-          map.setCenter(location);
-          map.setZoom(17);
         }
+
+        origin = stops.shift();
+        destination = stops.pop();
+
+        directionsService.route(
+          {
+            origin: origin,
+            destination: destination,
+            waypoints: stops,
+            travelMode: transportation,
+          },
+          function (response, status) {
+            if (status === "OK") {
+              directionsRenderer.setDirections(response);
+            } else {
+              alert("Directions request failed due to " + status);
+            }
+          }
+        );
+        map.setCenter(origin.location);
+        map.setZoom(17);
         i++;
       }
     });
