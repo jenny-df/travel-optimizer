@@ -10,7 +10,7 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 # from data_scraper import *
 
-"""Necessary inputs for the VRP: locations, """
+"""Inputs for the VRP: locations, transport_mode, number of days user will travel, """
 
 # list of tuples (ID, latitude, longitude, open time, close time) for every location
 # locations = get_routes_simple()
@@ -27,9 +27,13 @@ locations = [('ChIJ20bVJYdZwokRhI7esP3mYM0', 40.71881799999999, -73.9900876, 60,
              ('ChIJN3MJ6pRYwokRiXg91flSP8Y', 40.73958770000001, -74.0088629, 567, 987),
              ('ChIJN6W-X_VYwokRTqwcBnTw1Uk', 40.7724641, -73.9834889, 4, 1434)]
 
+transport_mode = 'car'
+days_traveled = 5
+
+"""Convert inputs to correct format for VRP"""
+
 locations_for_distance_matrix = []
 time_windows = []
-# [(lat, long) for (id,lat,long, open, close) in locations]
 
 for location in locations:
     id,lat,long, open, close = location
@@ -68,12 +72,7 @@ def compute_distance_matrix(locations):
 # Create distance matrix which for each node contains a list of the distances (in meters) from that node to all other nodes
 distance_matrix = compute_distance_matrix(locations_for_distance_matrix)
 
-# Coefficient to multiply distances in meters to obtain time it takes to traverse given distance depending on mode of transportation
-
-# print([[0.001*length for length in distance] for distance in distance_matrix])
-
-transport_mode = 'car'
-
+# Multiply distances in meters by coefficient to obtain time it takes to traverse given distance depending on mode of transportation
 def compute_time_matrix(transport_mode, distance_matrix):
     if transport_mode == 'car':
         # going 20 mph
@@ -88,24 +87,16 @@ def compute_time_matrix(transport_mode, distance_matrix):
         # 12 mph
         return([[int(0.003*length) for length in distance] for distance in distance_matrix])
     
-print(compute_time_matrix(transport_mode, distance_matrix))
-print(time_windows)
-
-
-# Round latitute and longitude to 6 decimal places (conserves within 11cm accuracy) and convert to int
-# locations = [(int(round(lat,6)*(1e+6)), int(round(long,6)*(1e+6))) for (id,lat,long) in locations]
-
+# print(compute_time_matrix(transport_mode, distance_matrix))
+# print(time_windows)
 # Create time window matrix, a list of tuples where each tuple is (open time, closing time) in same order as each node appears in time_matrix
 # time_windows = [(133, 831), (1071, 1374), (290, 827), (313, 1032), (12, 382), (1045, 1440), (72, 604), (348, 1086), (755, 1302), (434, 1012), (43, 659), (0,1440)]
 # time_windows = [(start // 60, end // 60) for start, end in time_windows]
 
-print(time_windows)
-
-
 
 """Vehicle Routing Problem (VRP) with Time Windows
 
-   Distances in hours
+   Distances in terms of time in minutes
 """
 
 # Create data model for Vehicle Routing Problem 
@@ -119,9 +110,9 @@ def create_data_model():
     data["time_windows"] = time_windows
 
     # number of vehicles (days of travel, in our case)
-    data["num_vehicles"] = 5
+    data["num_vehicles"] = days_traveled
 
-    # start and end point of each vehicle (hotel where traveller is staying, in our case)
+    # start and end point of each vehicle (hotel where traveller is staying, in our case) -> Start/end point is always first location in list
     data["depot"] = 0
 
     return data
@@ -219,7 +210,7 @@ def main():
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)
 
-    # Print solution on console.
+    # Print solution in Terminal
     if solution:
         print_solution(data, manager, routing, solution)
     else:
