@@ -21,7 +21,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
     idx=0
     for location in required_locations:
-        name, id,lat,long, open, close, visit_time = location
+        id, name, lat, long, open, close, visit_time = location
         locations_for_distance_matrix.append((lat,long))
         time_windows.append((open,close))
         reference_dict[idx] = {'name':name, 'lat':lat, 'long':long, 'visit_time':visit_time}
