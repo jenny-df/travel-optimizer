@@ -655,7 +655,7 @@ def get_attractions_user_input(info):
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)#, float(info['budget']))
     
     # Reorder required_info based on the ranked attractions ids
-    required_info = sorted(required_info, key = lambda x: ranked_attractions.index(x[0]))
+    #required_info = sorted(required_info, key = lambda x: ranked_attractions.index(x[0]))
     print(required_info, optional_info)
     return required_info, optional_info
 
