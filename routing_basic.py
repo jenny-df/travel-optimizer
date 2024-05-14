@@ -131,8 +131,8 @@ def router(required_locations, optional_locations, ranking_considered, transport
         time_dimension = routing.GetDimensionOrDie("Time")
         total_time = 0
 
-        # print(data["time_matrix"])
-        # print(data["time_windows"])
+        print(data["time_matrix"])
+        print(data["time_windows"])
 
         plan = []
         for day_id in range(data["num_days"]):
