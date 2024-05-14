@@ -184,8 +184,8 @@ form {
 
 #sleepTime,
 #wakeTime,
-#departureDate,
-#departureTime {
+#arrivalDate,
+#arrivalTime {
   width: max-content;
   margin-right: 3vw;
 }
