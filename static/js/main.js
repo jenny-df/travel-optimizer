@@ -116,7 +116,7 @@ window.addEventListener("load", (e) => {
     const latitude = place.geometry.location.lat();
     const longitude = place.geometry.location.lng();
 
-    hotel.value = latitude + "$" + longitude;
+    hotel.value = latitude + "$" + longitude + "$" + place.name;
 
     // Remove previous hotel (if applicable)
     if (hotel_name !== "") {
