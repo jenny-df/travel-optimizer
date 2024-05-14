@@ -564,7 +564,7 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [['HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440]] + get_routes_simple(list(required_attractions))
+    required_info = [('HOTEL', info['hotel'][0], info['hotel'][1], 0, 1440)] + get_routes_simple(list(required_attractions))
     optional_info = get_routes_simple(list(optional_attractions))
     return required_info, optional_info
 
