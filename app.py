@@ -74,14 +74,16 @@ def results():
     required, optional = get_attractions_user_input(data)
 
     # Call to optimized routing
-    optimized_route_output, total_trip_time = router(required, optional, data['ranking_considered'] == "yes", data['transport'], int(data['numDays']))
+    optimized_route_output, travel_time, visit_time, num_sites = router(required, optional, data['ranking_considered'] == "yes", data['transport'], int(data['numDays']))
 
     return render_template("results.html", 
-                        routes = optimized_route_output,
-                        total_trip_time = total_trip_time,
-                        required = required,
-                        optional = optional,
-                        google_key = GOOGLE_KEY,
+                        routes=optimized_route_output,
+                        travel_time=travel_time,
+                        visit_time=visit_time,
+                        num_sites=num_sites,
+                        required=required,
+                        optional=optional,
+                        google_key=GOOGLE_KEY,
                         transport=data['transport'],
                         )
 

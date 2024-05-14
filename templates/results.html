@@ -18,23 +18,23 @@ style %}main.css{% endset %} {% block body %}
   <h2>No results found!</h2>
   {% else %}
   <div id="route-results" class="result-sections">
-    <h2 class="result-title">Routes</h2>
+    <h2 class="result-title">Optimized Route</h2>
+    <p>Total time on the road: {{travel_time}} minutes</p>
+    <p>Total time at the {{num_sites}} sites: {{visit_time}} minutes</p>
     {% for route in routes %}
     <div class="one-result" id="route_{{loop.index}}">
       <h3>Day {{loop.index}}:</h3>
       <div class="maps"></div>
       {% for place in route[:route|length - 1] %}
       <span id="{{place['name']}}${{place['lat']}}${{place['long']}}">
-        {{place['name']}} for {{place['visit_time']}} minutes (Visit between
-        {{place['time_windows']}}) ->
+        {{place['name']}} for {{place['visit_time']}} minutes ->
       </span>
       {% endfor %}
       <span
         id="{{route[route|length - 1]['name']}}${{route[route|length - 1]['lat']}}${{route[route|length - 1]['long']}}"
       >
         {{ route[route|length - 1]['name'] }} for {{route[route|length -
-        1]['visit_time']}} minutes (Visit between {{route[route|length -
-        1]['time_windows']}})
+        1]['visit_time']}} minutes
       </span>
     </div>
     {% endfor %}
@@ -89,13 +89,12 @@ style %}main.css{% endset %} {% block body %}
           stops.push({
             location: { lat: parseFloat(info[1]), lng: parseFloat(info[2]) },
             stopover: true,
-            name: info[0],
           });
         }
 
-        origin = stops.shift();
-        destination = stops.pop();
-
+        origin = stops.shift().location;
+        destination = stops.pop().location;
+        console.log(origin, destination, stops, transportation);
         directionsService.route(
           {
             origin: origin,
@@ -111,8 +110,10 @@ style %}main.css{% endset %} {% block body %}
             }
           }
         );
+
         map.setCenter(origin.location);
         map.setZoom(17);
+        console.log("HERE");
         i++;
       }
     });
