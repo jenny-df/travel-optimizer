@@ -64,13 +64,13 @@ def router(required_locations, optional_locations, ranking_considered, transport
         if transport_mode == 'car':
             # going 20 mph
             return([[int(0.002*length) for length in distance] for distance in distance_matrix])
-        if transport_mode == 'walk':
+        if transport_mode == 'walking':
             # 5km/h
             return([[int(0.012*length) for length in distance] for distance in distance_matrix])
-        if transport_mode == 'public transportation':
+        if transport_mode == 'public transport':
             # 15 mph
             return([[int(0.0025*length) for length in distance] for distance in distance_matrix])
-        if transport_mode == 'biking':
+        if transport_mode == 'bike':
             # 12 mph
             return([[int(0.003*length) for length in distance] for distance in distance_matrix])
         
