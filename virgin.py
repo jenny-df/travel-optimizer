@@ -197,6 +197,7 @@ def router(required_locations, optional_locations, ranking_considered, transport
             total_travel_time += day_travel_time
             total_visit_time += day_visit_time
 
+        # return plan_output, total_travel_time, total_visit_time
         return plan_output, total_travel_time, total_visit_time
 
     """Solve the VRP with time windows."""
