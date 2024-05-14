@@ -88,7 +88,7 @@ def sleep_time_truncate(sleep_time, wake_time, open_time, close_time):
     '''
 
     open_time = max(open_time, wake_time)
-    close_time = min(close_time, sleep_time)
+    #close_time = min(close_time, sleep_time)
 
     return open_time, close_time
 
@@ -644,7 +644,7 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), 0, 1440, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
+    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), 0, 1440, 10)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])
     optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)
     print(required_info, optional_info)
     return required_info, optional_info
