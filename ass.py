@@ -36,6 +36,6 @@ for day_plan in plan_output:
 
 
 
-print(total_travel_time, total_visit_time)
+print(plan_output, total_travel_time, total_visit_time)
     # for location in day_plan:
 
