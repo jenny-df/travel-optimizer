@@ -517,6 +517,8 @@ def get_routes_simple(place_ids, sleep_time, wake_time, filters_including, filte
             open = 1440
         if close > 1440:
             close = 1440
+        if close < open:
+            close = 1440
         avg = get_average_time(place[0])
         ans.append((place[0], place[1], float(place[2]), float(place[3]), open, close, avg))
     
@@ -554,6 +556,8 @@ def get_attractions_user_input(info):
     required_names = set(info['must_names'])
     required_location_to_name = {}
     sleep_time, wake_time = input_time_to_int(info['sleepTime']), input_time_to_int(info['wakeTime'])
+    if (sleep_time < wake_time):
+        sleep_tim = 1440
     filters_including = info['include']
     filters_excluding = info['exclude']
     
