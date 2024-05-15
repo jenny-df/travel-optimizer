@@ -15,15 +15,22 @@ from data_scraper import *
    Distances in hours
 """
 
-def router(required_locations, optional_locations, ranking_considered, transport_mode, days_traveled):
+def router(locations, optional_locations, ranking_considered, transport_mode, days_traveled):
 
     """Convert inputs to correct format for VRP ---------------------------------------------------------------------------------------------------------------------"""
     locations_for_distance_matrix = []
     time_windows = []
     reference_dict = {}
 
+    if len(optional_locations)>0:
+
+        locations = locations + optional_locations
+
+        # used later to give drop option for these nodes
+        num_optional = len(optional_locations)
+
     idx=0
-    for location in required_locations:
+    for location in locations:
         id_, name,lat,longi, open_time, close, visit_time = location
         locations_for_distance_matrix.append((lat,longi))
         time_windows.append((open_time,close))
@@ -291,6 +298,23 @@ def router(required_locations, optional_locations, ranking_considered, transport
             break_intervals[v],  # breaks
             v,  # vehicle index
             node_visit_transit)
+        
+    if len(optional_locations)>0:
+        total_travel_time_minus_depot = 0
+
+        for node_idx in range(1,len(data["time_matrix"])):
+
+            # don't count distance to hotel
+            node_distances = data["time_matrix"][node_idx]
+            individual_travel = sum(node_distances) - node_distances[0]
+            total_travel_time_minus_depot += individual_travel
+
+        total_travel_time_minus_depot = int(total_travel_time_minus_depot/2)
+
+        # Allow node dropping for locations that are optional - works with penalty of any size
+        penalty = total_travel_time_minus_depot
+        for node_idx in range(num_optional-1, len(locations)):
+            routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
