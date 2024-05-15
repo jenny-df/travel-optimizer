@@ -76,4 +76,4 @@ for node_idx in range(1,len(time_matrix)):
 
     total_travel_time_minus_depot = total_travel_time_minus_depot/2
 
-print(int(total_travel_time_minus_depot))
+# print(int(total_travel_time_minus_depot))
