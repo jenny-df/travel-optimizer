@@ -92,16 +92,16 @@ def sleep_time_truncate(sleep_time, wake_time, open_time, close_time):
 
     return open_time, close_time
 
-def city_exists(city):
+def city_exists(city, country):
     '''
     Checks if a city exists in the database
     '''
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM cities WHERE name = ?", (city,))
+    cursor.execute("SELECT * FROM cities WHERE name = ? AND country = ?", (city, country))
     result = cursor.fetchone()
     conn.close()
-    return result is not None
+    return result
 
 def clean_data(place_details):
     '''
@@ -224,20 +224,6 @@ def insert_city(city, country):
 
     return city_id
 
-def update_place(city_id, attractions):
-    '''
-    Updates tourist attractions in the database
-    Adds non-existent ones and skips others
-    '''
-
-    conn = sqlite3.connect('Databases/travel.db')
-    cursor = conn.cursor()
-
-    # Get all the place_ids already in the city
-    cursor.execute("SELECT place_id FROM places WHERE city_id = ?", (city_id,))
-    place_ids = set([place[0] for place in cursor.fetchall()])
-
-    # Insert places
 
 def insert_place(city_id, attractions):
     '''
@@ -559,7 +545,7 @@ def get_attractions_user_input(info):
     # Truncating sleep at 12AM thats all we support now
     sleep_time, wake_time = input_time_to_int(info['sleepTime']), input_time_to_int(info['wakeTime'])
     if (sleep_time < wake_time):
-        sleep_tim = 1440
+        sleep_time = 1440
     
     filters_including = info['include']
     filters_excluding = info['exclude']
@@ -568,79 +554,64 @@ def get_attractions_user_input(info):
     optional_attractions = set()
     places_unique = set()
 
+    # Getting all ids from the places table
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
     cursor.execute("SELECT place_id FROM places")
     all_ids = cursor.fetchall()
-    places_unique = set([place[0] for place in all_ids])
     conn.commit()
     conn.close()
+    
+    # Keeping track of all ids in the set
+    places_unique = set([place[0] for place in all_ids])
+    
 
     for i in range(len(required_locations)):
         lat, lng = required_locations[i]
         city, country = get_city_country(lat, lng)
-        if city_exists(city):
+        
+        if city_exists(city, country):
             # Get the place_ids in the city
             conn = sqlite3.connect('Databases/travel.db')
             cursor = conn.cursor()
-            cursor.execute("SELECT place_id, city_id FROM places WHERE city_id = (SELECT id FROM cities WHERE name = ?)", (city,))
+            cursor.execute("SELECT place_id FROM places WHERE city_id = (SELECT id FROM cities WHERE name = ?)", (city,))
             all_places = cursor.fetchall()
-            place_ids = [place[0] for place in all_places]
-            city_id = all_places[0][1]
-            places_unique.update(place_ids)
-            optional_attractions.update(place_ids)
             conn.commit()
             conn.close()
+
+            place_ids = [place[0] for place in all_places]
+            
+            places_unique.update(place_ids)
+
+            # All place_ids are added to optional attractions
+            optional_attractions.update(place_ids)       
         else:
-            city_id = insert_city(city, country)
+            # Update the database
+            new_ids = update_city(lat, lng, city, country)
+            optional_attractions.update(new_ids)
 
-        # Define parameters for nearby search
-        params = {
-            'location': (lat, lng),
-            'radius': 20000,  # 20 kilometers (adjust as needed)
-            'type': 'tourist_attraction'
-        }
-
-        places = gmaps.places_nearby(**params)
-
-        # Extract and return information about tourist attractions
-        for place in places['results']:
-            # Get place details
-            place_id = place['place_id']
-
-            if (place['name'] in required_names):
-                required_attractions.add(place_id)      
-
-            if place_id in places_unique:
-                continue                
-
-            places_unique.add(place_id)
-            optional_attractions.add(place_id)
-            place_details = gmaps.place(place_id = place_id, fields = fields)['result']
-
-            # Clean the place details
-            formatted_details, time_details, photo_details, category_details  = clean_data(place_details)
-            # Insert everything in the database
-            insert_place(city_id, [formatted_details])
-            for time in time_details:
-                insert_time(time[0], time[1])
-            for photo in photo_details:
-                insert_photos(photo[0], photo[1], photo[2], photo[3])
-            for category in category_details:
-                insert_categories(category[0], category[1])
-
-        # Get the details of lan and lng
+        # Add the place to required attractions
         req_place = gmaps.reverse_geocode((lat, lng))
         req_id = req_place[0]['place_id']
         req_details = gmaps.place(place_id = req_id, fields = fields)['result']
+        
         formatted_details, time_details, photo_details, category_details  = clean_data(req_details)
         formatted_details['name'] = required_names_list[i]
+        
         required_attractions.add(req_id)
         ranked_attractions.append(req_id)
 
-        if req_id not in places_unique:
+        if req_id in places_unique:
+            # Update this req_id name in places_unique
+            conn = sqlite3.connect('Databases/travel.db')
+            cursor = conn.cursor()
+            cursor.execute("UPDATE places SET name = ? WHERE place_id = ?", (required_names_list[i], req_id))
+            conn.commit()
+            conn.close()
+        else:
+            print(city_exists(city, country))
+            city_id = city_exists(city, country)[0]
             places_unique.add(req_id)
-            optional_attractions.add(req_id)
             insert_place(city_id, [formatted_details])
             for time in time_details:
                 insert_time(time[0], time[1])
@@ -648,7 +619,6 @@ def get_attractions_user_input(info):
                 insert_photos(photo[0], photo[1], photo[2], photo[3])
             for category in category_details:
                 insert_categories(category[0], category[1])
-
 
 
     # Remove required attractions from optional attractions
@@ -664,43 +634,21 @@ def get_attractions_user_input(info):
 
 
 
-def get_tourist_attractions(city):
+def update_city(lat, lng, city, country):
     '''
-    Returns a list of tourist attractions in a city
+    Updates the touristic places in the city and returns their place_ids
     '''
 
-    if (city_exists(city)):
-        # If the city is already in the database, return the tourist attractions from the database
-        conn = sqlite3.connect('Databases/travel.db')
-        cursor = conn.cursor()
-
-        # Get all the places with this city
-        cursor.execute("SELECT * FROM places WHERE city_id = (SELECT id FROM cities WHERE name = ?)", (city,))
-        columns = [column[0] for column in cursor.description]
-
-        # Extract and return information about tourist attractions
-        tourist_attractions = []
-
-        for place in cursor.fetchall():
-            place_details = dict(zip(columns, place))
-            tourist_attractions.append(place_details)
-        
-        conn.close()
-        return tourist_attractions
+    # Insert the city and its places into the database
+    city_id = insert_city(city, country)
+    place_ids = set()
     
-    # Geocode the city to get its coordinates
-    geocode_result = gmaps.geocode(city)
-    city_location = geocode_result[0]['geometry']['location']
-    city, country = get_city_country(geocode_result)
-
     # Define parameters for nearby search
     params = {
-        'location': (city_location['lat'], city_location['lng']),
+        'location': (lat, lng),
         'radius': 100000,  # 100 kilometers (adjust as needed)
         'type': 'tourist_attraction'
     }
-
-    tourist_attractions = []
 
     max_iteration = 2 # Adjust in the future
     iteration = 0
@@ -714,12 +662,26 @@ def get_tourist_attractions(city):
             # Get place details
             place_id = place['place_id']
             place_details = gmaps.place(place_id = place_id, fields = fields)['result']
-            
+
             # Clean the place details
             place_details = clean_data(place_details)
 
-            # Add place details to the list
-            tourist_attractions.append(place_details)
+
+            # Clean the place details
+            formatted_details, time_details, photo_details, category_details  = place_details
+            
+            # Insert everything in the database
+            insert_place(city_id, [formatted_details])
+            for _times in time_details:
+                insert_time(_times[0], _times[1])
+            for photo in photo_details:
+                insert_photos(photo[0], photo[1], photo[2], photo[3])
+            for category in category_details:
+                insert_categories(category[0], category[1])
+            
+
+            place_ids.add(place_id)
+
         
         # Check if there are more results to fetch
         if 'next_page_token' in places:
@@ -730,20 +692,15 @@ def get_tourist_attractions(city):
         else:
             break
         
-    # Insert the city and its places into the database
-    city_id = insert_city(city, country)
-    insert_place(city_id, tourist_attractions)
-    
-    return tourist_attractions
-
+    return place_ids
 
 if __name__ == '__main__':
-    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '2', 'hotel_name': 'balbla', 'hotel_loc': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': ['stadium', 'museum'], 'exclude': []}
+    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '2', 'hotel_name': 'balbla', 'hotel_loc': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': [], 'exclude': []}
     required, optional = get_attractions_user_input(names)
 
-    ids = [place[0] for place in optional]
-
-    filters = ['museum']
+    #ids = [place[0] for place in optional]
 
     print(required)
     print(optional)
+
+    print(len(required), len(optional))
