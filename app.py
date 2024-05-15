@@ -38,20 +38,8 @@ valid_categories = set(categories.values())
 
 GOOGLE_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
 
-@app.route('/', methods = ["GET"])
-def home():
-    return render_template("home.html")
-
-
-@app.route('/data', methods = ["GET"])
-def data():
-    return render_template("data.html", categories=categories, google_key=GOOGLE_KEY)
-
-
-@app.route('/results', methods = ["POST"])
-def results():
-    # Getting values from the form
-    data = dict(request.form)
+def preprocess_data(data):
+     # Reformating
     data['must_locations'] = [tuple(info.split("$")) for info in data['must_locations'].split('*')]
     data['must_names'] = data['must_names'].split('$')
     tmp = data['hotel'].split("$")
@@ -70,6 +58,22 @@ def results():
     for key in to_del:
         del data[key]
 
+    return data
+
+@app.route('/', methods = ["GET"])
+def home():
+    return render_template("home.html")
+
+
+@app.route('/data', methods = ["GET"])
+def data():
+    return render_template("data.html", categories=categories, google_key=GOOGLE_KEY)
+
+
+@app.route('/results', methods = ["POST"])
+def results():
+    data = preprocess_data(dict(request.form))
+
     # Getting the required and optional locations based on data
     required, optional = get_attractions_user_input(data)
 
@@ -87,12 +91,26 @@ def results():
                         transport=data['transport'],
                         )
 
+@app.route('/eval', methods = ["POST"])
+def evaluation():
+    data = preprocess_data(dict(request.form))
+
+    required, optional = get_attractions_user_input(data)
+    print(f"Num required: {len(required)}, Num optional: {len(optional)}")
+
+    for day in [1, 3, 5, 7, 10]:
+        for transport in ["public transport", "car", "walking", "bike"]:
+            optimized_route_output, travel_time, visit_time, num_sites = router(required, optional, False, transport, day)
+            print(f"{day} Days ({transport}):\n {optimized_route_output =}\n {travel_time =}\n {visit_time =}\n {num_sites =}\n")
+
+    return redirect(url_for("data", _method="GET"))          
+
 
 @app.route('/scrape/<string:city_name>', methods = ["GET"])
 def scrape(city_name):
     # CHANGE TO GET if you want to use this!
     try:
-        info = get_tourist_attractions(city_name)
+        info = update_city(city_name)
         print(info)
     except:
         print("ERROR in scraping")
