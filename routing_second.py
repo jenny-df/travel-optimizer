@@ -295,11 +295,22 @@ def router(required_locations, optional_locations, ranking_considered, transport
             break_intervals[v],  # breaks
             v,  # vehicle index
             node_visit_transit)
-        
+    
+    total_travel_time_minus_depot = 0
+
+    for node_idx in range(1,len(data["time_matrix"])):
+
+        # don't count distance to hotel
+        node_distances = data["time_matrix"][node_idx]
+        individual_travel = sum(node_distances) - node_distances[0]
+        total_travel_time_minus_depot += individual_travel
+
+    total_travel_time_minus_depot = int(total_travel_time_minus_depot/2)
+
     # Allow node dropping for locations that are optional - works with penalty of any size
-    penalty = 10
-    for node in all_locations[-num_optional]:
-        routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
+    penalty = total_travel_time_minus_depot
+    for node_idx in range(num_optional-1, len(all_locations)):
+        routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
 
     # Instantiate route start and end times to produce feasible times.
     for i in range(data["num_days"]):
