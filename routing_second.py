@@ -22,8 +22,6 @@ def router(required_locations, optional_locations, ranking_considered, transport
 
     # used later to give drop option for these nodes
     num_optional = len(optional_locations)
-
-    print(all_locations[-num_optional])
     
     locations_for_distance_matrix = []
     time_windows = []
