@@ -609,7 +609,6 @@ def get_attractions_user_input(info):
             conn.commit()
             conn.close()
         else:
-            print(city_exists(city, country))
             city_id = city_exists(city, country)[0]
             places_unique.add(req_id)
             insert_place(city_id, [formatted_details])
@@ -650,7 +649,7 @@ def update_city(lat, lng, city, country):
         'type': 'tourist_attraction'
     }
 
-    max_iteration = 2 # Adjust in the future
+    max_iteration = 1 # Adjust in the future
     iteration = 0
 
     while iteration < max_iteration:
