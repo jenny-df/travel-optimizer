@@ -554,20 +554,19 @@ def get_attractions_user_input(info):
     required_locations = info['must_locations']
     required_names_list = info['must_names']
     required_names = set(info['must_names'])
-    required_location_to_name = {}
+    required_attractions = set()
+    
+    # Truncating sleep at 12AM thats all we support now
     sleep_time, wake_time = input_time_to_int(info['sleepTime']), input_time_to_int(info['wakeTime'])
     if (sleep_time < wake_time):
         sleep_tim = 1440
+    
     filters_including = info['include']
     filters_excluding = info['exclude']
     
-    required_attractions = set()
     ranked_attractions = ['HOTEL']
     optional_attractions = set()
     places_unique = set()
-
-    max_iteration = 5 # Adjust in the future
-    iteration = 0
 
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
@@ -655,8 +654,8 @@ def get_attractions_user_input(info):
     # Remove required attractions from optional attractions
     optional_attractions = optional_attractions - required_attractions
 
-    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), wake_time, sleep_time, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [])#, float(info['budget']))
-    optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding)#, float(info['budget']))
+    required_info = [('HOTEL', info['hotel_name'], float(info['hotel_loc'][0]), float(info['hotel_loc'][1]), wake_time, sleep_time, 0)] + get_routes_simple(list(required_attractions), sleep_time, wake_time, [], [], float(info['budget']))
+    optional_info = get_routes_simple(list(optional_attractions), sleep_time, wake_time, filters_including, filters_excluding, float(info['budget']))
     
     # Reorder required_info based on the ranked attractions ids
     #required_info = sorted(required_info, key = lambda x: ranked_attractions.index(x[0]))
@@ -748,10 +747,3 @@ if __name__ == '__main__':
 
     print(required)
     print(optional)
-
-    #new = categories_including_filter(ids, filters)
-    #print(ids)
-    #print()
-    #print()
-    #print(new)
-    #print(len(required), len(optional))
