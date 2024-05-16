@@ -98,7 +98,7 @@ def city_exists(city, country):
     '''
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
-    if country:
+    if country and city:
         cursor.execute("SELECT * FROM cities WHERE name = ? AND country = ?", (city, country))
     else:
         cursor.execute("SELECT * FROM cities WHERE name = ?", (city, ))
@@ -685,7 +685,7 @@ def update_city(lat, lng, city, country):
         'type': 'tourist_attraction'
     }
 
-    max_iteration = 1 # Adjust in the future
+    max_iteration = 3 # Adjust in the future
     iteration = 0
 
     while iteration < max_iteration:

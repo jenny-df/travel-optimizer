@@ -19,7 +19,7 @@ TRANSPORT_SPEEDS = {
 }
 
 TRANSPORT_DAILY_LOC_LIMITS = {
-    "car": 15, 
+    "car": 12, 
     "walking": 11,
     'public transport' : 14,
     'bike' : 15,
@@ -172,8 +172,11 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
         total_num_locations -= num_locs_dif
         locations = locations[:total_num_locations]
 
-    if len(locations) < len(required):
+    if len(locations) <= len(required):
         locations = required
+        optional = []
+    else:
+        optional = locations[len(required):]
 
     for _, name, latitude, longitude, open_time, close_time, visit_time in locations:
         locations_for_distance_matrix.append((latitude, longitude))
@@ -226,7 +229,7 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
         i = routing.Start(vehicle_id)
         time_dimension.CumulVar(i).SetRange(*depot_window)
 
-    # Add visit time breaks (ASK)
+    # Add visit time breaks
     node_visit_transit = [0] * routing.Size()
     for i, ref in enumerate(reference_list):
         node_visit_transit[i] = ref['visit_time']
