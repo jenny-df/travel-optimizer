@@ -19,8 +19,7 @@ style %}main.css{% endset %} {% block body %}
   {% else %}
   <div id="route-results" class="result-sections">
     <h2 class="result-title">Optimized Route</h2>
-    <p>Total time on the road: {{travel_time}} minutes</p>
-    <p>Total time at the {{num_sites}} sites: {{visit_time}} minutes</p>
+    <p>Total Number of sites: {{num_sites}}</p>
     {% for route in routes %}
     <div class="one-result" id="route_{{loop.index}}">
       <h3>Day {{loop.index}}:</h3>
