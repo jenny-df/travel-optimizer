@@ -341,9 +341,11 @@ def categories_including_filter(all_place_ids, filters):
     if not filters:
         return []
 
-    query = f"SELECT place_id FROM categories WHERE {' OR '.join([f'{category} = 1' for category in filters])} AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
-    cursor.execute(query, all_place_ids)
+    query = f"SELECT place_id FROM categories WHERE {' OR '.join([f'{category} = 1' for category in filters])}" #AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
+    #cursor.execute(query, all_place_ids)
+    cursor.execute(query)
     place_ids = set([place[0] for place in cursor.fetchall()])
+    place_ids = place_ids & set(all_place_ids)
     
     conn.commit()
     conn.close()
@@ -375,9 +377,10 @@ def categories_excluding_filter(all_place_ids, filters):
     if not filters:
         return all_place_ids
 
-    query = f"SELECT place_id FROM categories WHERE {' AND '.join([f'{category} = 1' for category in filters])} AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
-    cursor.execute(query, all_place_ids)
+    query = f"SELECT place_id FROM categories WHERE {' AND '.join([f'{category} = 1' for category in filters])}" #AND place_id IN ({', '.join(['?'] * len(all_place_ids))})"
+    cursor.execute(query)
     place_ids = set([place[0] for place in cursor.fetchall()])
+    place_ids = place_ids & set(all_place_ids)
     place_ids = set(all_place_ids) - place_ids
     
     conn.commit()
@@ -723,7 +726,7 @@ def update_city(lat, lng, city, country):
     return place_ids
 
 if __name__ == '__main__':
-    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '2', 'hotel_name': 'balbla', 'hotel_loc': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': [], 'exclude': ['afasdf']}
+    names = {'must_locations': [('42.3600825', '-71.0588801')], 'must_names': ['Boston'], 'ranking_considered': 'yes', 'transport': 'car', 'budget': '2', 'hotel_name': 'balbla', 'hotel_loc': ('42.3484914', '-71.0952429'), 'sleepTime': '22:21', 'wakeTime': '10:24', 'arrivalDate': '2024-05-14', 'arrivalTime': '13:21', 'numDays': '5', 'include': [], 'exclude': ['park']}
     required, optional = get_attractions_user_input(names)
 
     #ids = [place[0] for place in optional]
