@@ -36,7 +36,7 @@ style %}main.css{% endset %} {% block body %}
       </span>
       {% for place in route[1:route|length - 1] %}
       <span id="{{place['name']}}${{place['lat']}}${{place['long']}}">
-        {{place['name']}} (visit: {{place['visit_time']}} minutes) ->
+        {{place['name']}} ->
       </span>
       {% endfor %}
       <span
