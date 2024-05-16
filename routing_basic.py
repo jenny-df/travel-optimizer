@@ -104,34 +104,6 @@ def router(locations, optional_locations, ranking_considered, transport_mode, da
 
         return data
 
-    
-
-    # Prints solution in Terminal
-    # def print_solution(data, manager, routing, solution):
-        print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
-        time_dimension = routing.GetDimensionOrDie("Time")
-        total_time = 0
-        for vehicle_id in range(data["num_vehicles"]):
-            index = routing.Start(vehicle_id)
-            plan_output = f"Route for vehicle {vehicle_id}:\n"
-            while not routing.IsEnd(index):
-                time_var = time_dimension.CumulVar(index)
-                plan_output += (
-                    f"{manager.IndexToNode(index)}"
-                    f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
-                    " -> "
-                )
-                index = solution.Value(routing.NextVar(index))
-            time_var = time_dimension.CumulVar(index)
-            plan_output += (
-                f"{manager.IndexToNode(index)}"
-                f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
-            )
-            plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
-            print(plan_output)
-            total_time += solution.Min(time_var)
-        print(f"Total time of all routes: {total_time}min")
-
     # Prints solution in Terminal
     def return_solution(data, manager, routing, solution):
         # print(f"Objective (sum of the arcs/travel costs along the edges, which we are minimizing): {solution.ObjectiveValue()}")
@@ -311,8 +283,17 @@ def router(locations, optional_locations, ranking_considered, transport_mode, da
 
         total_travel_time_minus_depot = int(total_travel_time_minus_depot/2)
 
-        # Allow node dropping for locations that are optional - works with penalty of any size
         penalty = total_travel_time_minus_depot
+
+        if ranking_considered:
+            percent_penalty = 0
+            for node_idx in range(len(locations),0,-1):
+                # add penalty that is 5% larger for each higher ranking
+                penalty = penalty*(1+percent_penalty)
+                routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
+                percent_penalty += 0.05
+
+        # Allow node dropping for locations that are optional - set penalty to be greater than sum of all distances not going to depot
         for node_idx in range(num_optional-1, len(locations)):
             routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
 
@@ -340,6 +321,8 @@ def router(locations, optional_locations, ranking_considered, transport_mode, da
 
 locations = [('HOTEL', 'Marriott Hotel', 42.3629114, -71.0861978, 540, 1080, 0), ('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60), ('ChIJZRKlXXd644kRMqoHxDSSRD4', 'Chinatown', 42.3493259, -71.0621815, 540, 1020, 60)]
 
-locations2 = [('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 42.3744368, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60)]
+locations2 = [('ChIJpbiA_0J344kRmiVu-fjcbAA', 'Massachusetts Hall', 3, -71.118281, 540, 1020, 60), ('ChIJP7WqWapw44kRiTw1teyTNdM', 'BLUE COVE MANAGEMENT, INC.', 42.360091, -71.0941599, 540, 1020, 60), ('ChIJa3g3jhBx44kRZPE5-nY3-gE', 'K-Curl Studio', 42.3548561, -71.0661193, 540, 1020, 60), ('ChIJbz8lP_Z544kRBFV6ZMsNgKI', 'Fenway Park', 42.3466764, -71.0972178, 540, 1020, 60), ('ChIJ7YKigxh644kR6D24lfwf8oA', 'Churchill Hall', 42.3387904, -71.088892, 420, 1140, 60)]
 
-# print(router(locations2, [], False, 'car', 2))
+#42.3744368
+
+print(router(locations2, [], True, 'car', 2))
