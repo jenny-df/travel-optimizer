@@ -244,7 +244,6 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
         total_travel_time_minus_depot = int(total_travel_time_minus_depot/2)
 
         penalty = total_travel_time_minus_depot
-<<<<<<< HEAD
 
         if ranking_considered:
             percent_penalty = 0
@@ -254,13 +253,10 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
                 routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
                 percent_penalty += 0.05
 
-        # Allow node dropping for locations that are optional - set penalty to be greater than sum of all distances not going to depot
-        for node_idx in range(num_optional-1, len(locations)):
-            routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
-=======
-        for i in range(len(optional)-1, len(locations)):
-            routing.AddDisjunction([manager.NodeToIndex(i)], penalty)
->>>>>>> 4b8f8ec6286e0ac13680e32c135eda41953462e8
+        else:
+            # Allow node dropping for locations that are optional - set penalty to be greater than sum of all distances not going to depot
+            for node_idx in range(num_optional-1, len(locations)):
+                routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
 
     # Instantiate route start and end times to produce feasible times
     for i in range(data["num_days"]):
