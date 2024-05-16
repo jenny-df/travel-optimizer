@@ -142,32 +142,6 @@ def return_solution(data, manager, routing, solution, reference_list):
 
     return plan, total_travel_time, total_visit_time, len(sites)-1
 
-# Prints solution in Terminal
-def return_solution(data, manager, routing, solution):
-    print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
-    time_dimension = routing.GetDimensionOrDie("Time")
-    total_time = 0
-    for vehicle_id in range(data["num_vehicles"]):
-        index = routing.Start(vehicle_id)
-        plan_output = f"Route for vehicle {vehicle_id}:\n"
-        while not routing.IsEnd(index):
-            time_var = time_dimension.CumulVar(index)
-            plan_output += (
-                f"{manager.IndexToNode(index)}"
-                f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
-                " -> "
-            )
-            index = solution.Value(routing.NextVar(index))
-        time_var = time_dimension.CumulVar(index)
-        plan_output += (
-            f"{manager.IndexToNode(index)}"
-            f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
-        )
-        plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
-        print(plan_output)
-        total_time += solution.Min(time_var)
-    print(f"Total time of all routes: {total_time}min")
-
 
 def create_time_callback(manager, time_matrix):
     def time_callback(from_i, to_i):
