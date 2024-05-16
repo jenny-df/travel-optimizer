@@ -98,7 +98,11 @@ def city_exists(city, country):
     '''
     conn = sqlite3.connect('Databases/travel.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM cities WHERE name = ? AND country = ?", (city, country))
+    if country:
+        cursor.execute("SELECT * FROM cities WHERE name = ? AND country = ?", (city, country))
+    else:
+        cursor.execute("SELECT * FROM cities WHERE name = ?", (city, ))
+
     result = cursor.fetchone()
     conn.close()
     return result
@@ -466,9 +470,9 @@ def get_average_time(place_id):
             counter += 1
     
     if counter != 0:
-        return 2 * time_spent / counter
+        return time_spent / counter
     else:
-        return 120 # 2 hour default
+        return 60 # 2 hour default
 
 
 
@@ -677,7 +681,7 @@ def update_city(lat, lng, city, country):
     # Define parameters for nearby search
     params = {
         'location': (lat, lng),
-        'radius': 100000,  # 100 kilometers (adjust as needed)
+        'radius': 20 * 1000,  # 20 kilometers (adjust as needed)
         'type': 'tourist_attraction'
     }
 
