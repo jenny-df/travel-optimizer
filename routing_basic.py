@@ -126,10 +126,11 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     locations_for_distance_matrix = []
     time_windows = []
     reference_list = []
-    print(optional)
+    num_optional = len(optional)
 
     if len(optional) > 20:
         optional= optional[:5]
+        num_optional = len(optional)
     locations = required + optional # all locations
 
     for _, name, latitude, longitude, open_time, close_time, visit_time in locations:
