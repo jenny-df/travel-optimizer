@@ -18,6 +18,13 @@ TRANSPORT_SPEEDS = {
     'bike' : 0.003, # 12 mph
 }
 
+TRANSPORT_DAILY_LOC_LIMITS = {
+    "car": 15, 
+    "walking": 11,
+    'public transport' : 14,
+    'bike' : 15,
+}
+
 def compute_distance_matrix(locations):
     """
     Creates a distance matrix using Haversine distance between longitudes
@@ -68,18 +75,18 @@ def print_solution(data, manager, routing, solution):
 
     time_dimension = routing.GetDimensionOrDie("Time")
     total_time = 0
-    for vehicle_id in range(data["num_vehicles"]):
+    for vehicle_id in range(data["num_days"]):
         index = routing.Start(vehicle_id)
         plan_output = f"Route for vehicle {vehicle_id}:\n"
+        time_var = time_dimension.CumulVar(index)
         while not routing.IsEnd(index):
-            time_var = time_dimension.CumulVar(index)
             plan_output += (
                 f"{manager.IndexToNode(index)}"
                 f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
                 " -> "
             )
             index = solution.Value(routing.NextVar(index))
-        time_var = time_dimension.CumulVar(index)
+            time_var = time_dimension.CumulVar(index)
         plan_output += (
             f"{manager.IndexToNode(index)}"
             f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
@@ -114,6 +121,7 @@ def return_solution(data, manager, routing, solution, reference_list):
             time_var = time_dimension.CumulVar(i)
             node_number = manager.IndexToNode(i)
             ref = reference_list[node_number]
+ 
             day_plan.append({'name': ref['name'], 
                             'lat': ref['lat'], 
                             'long': ref['long'],
@@ -128,7 +136,7 @@ def return_solution(data, manager, routing, solution, reference_list):
                 break
 
             i = solution.Value(routing.NextVar(i))
-
+   
         total_travel_time += day_plan[-1]['travel_time'] - day_plan[0]['travel_time']
         plan.append(day_plan)
 
@@ -152,11 +160,20 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     locations_for_distance_matrix = []
     time_windows = []
     reference_list = []
-    print(optional)
-
-    if len(optional) > 20:
-        optional= optional[:5]
+    
     locations = required + optional # all locations
+    total_num_locations = len(locations)
+    num_loc_per_day = total_num_locations / days_traveled
+
+    # Truncates locations if it seems excessive per day
+    if num_loc_per_day > TRANSPORT_DAILY_LOC_LIMITS[transport_mode]:
+        dif = num_loc_per_day - TRANSPORT_DAILY_LOC_LIMITS[transport_mode]
+        num_locs_dif = round(dif * days_traveled)
+        total_num_locations -= num_locs_dif
+        locations = locations[:total_num_locations]
+
+    if len(locations) < len(required):
+        locations = required
 
     for _, name, latitude, longitude, open_time, close_time, visit_time in locations:
         locations_for_distance_matrix.append((latitude, longitude))
@@ -197,7 +214,6 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     )
     time_dimension = routing.GetDimensionOrDie("Time")
 
-
     # Add time window constraints for each location except depot
     for location_i, time_window in enumerate(data["time_windows"]):
         if location_i != data["depot"]:
@@ -229,9 +245,8 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
 
     if optional:
         total_travel_time_minus_depot = 0
-
         for node_distances in data["time_matrix"][1:]: # skips hotel
-            total_travel_time_minus_depot += (sum(node_distances) - node_distances[0])
+            total_travel_time_minus_depot += (sum(node_distances) - node_distances[0]) # skips hotel
 
         total_travel_time_minus_depot = int(total_travel_time_minus_depot/2)
 
@@ -258,6 +273,7 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     
     # Print solution on console.
     if solution:
+        print_solution(data, manager, routing, solution)
         return return_solution(data, manager, routing, solution, reference_list)
     return [], 0, 0, 0
 
