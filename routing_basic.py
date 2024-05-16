@@ -18,11 +18,13 @@ TRANSPORT_SPEEDS = {
     'bike' : 0.003, # 12 mph
 }
 
-    # # Prints solution in Terminal
-    # def return_solution(data, manager, routing, solution):
-    #     # print(f"Objective (sum of the arcs/travel costs along the edges, which we are minimizing): {solution.ObjectiveValue()}")
-    #     time_dimension = routing.GetDimensionOrDie("Time")
-    #     total_time = 0
+TRANSPORT_DAILY_LOC_LIMITS = {
+    "car": 15, 
+    "walking": 11,
+    'public transport' : 14,
+    'bike' : 15,
+}
+
 def compute_distance_matrix(locations):
     """
     Creates a distance matrix using Haversine distance between longitudes
@@ -65,7 +67,38 @@ def compute_time_matrix(transport_mode, distance_matrix):
     assert(transport_mode in TRANSPORT_SPEEDS, f"You are providing an invalid transport method {transport_mode}")
     return [[int(TRANSPORT_SPEEDS[transport_mode]*length) for length in distance] for distance in distance_matrix]
 
-# def return_solution(data, manager, routing, solution, reference_list):
+def print_solution(data, manager, routing, solution):
+    '''
+    Prints the solution that was found by the routing algorithm
+    '''
+    print(f"Objective (distance/time travelled which we are minimizing): {solution.ObjectiveValue()}")
+
+    time_dimension = routing.GetDimensionOrDie("Time")
+    total_time = 0
+    for vehicle_id in range(data["num_days"]):
+        index = routing.Start(vehicle_id)
+        plan_output = f"Route for vehicle {vehicle_id}:\n"
+        time_var = time_dimension.CumulVar(index)
+        while not routing.IsEnd(index):
+            plan_output += (
+                f"{manager.IndexToNode(index)}"
+                f" Time({solution.Min(time_var)},{solution.Max(time_var)})"
+                " -> "
+            )
+            index = solution.Value(routing.NextVar(index))
+            time_var = time_dimension.CumulVar(index)
+        plan_output += (
+            f"{manager.IndexToNode(index)}"
+            f" Time({solution.Min(time_var)},{solution.Max(time_var)})\n"
+        )
+        plan_output += f"Time of the route: {solution.Min(time_var)}min\n"
+        print(plan_output)
+
+        total_time += solution.Min(time_var)
+
+    print(f"Total time of all routes: {total_time}min")
+
+def return_solution(data, manager, routing, solution, reference_list):
     '''
     Finds the final output of the problem
     '''
@@ -88,6 +121,7 @@ def compute_time_matrix(transport_mode, distance_matrix):
             time_var = time_dimension.CumulVar(i)
             node_number = manager.IndexToNode(i)
             ref = reference_list[node_number]
+ 
             day_plan.append({'name': ref['name'], 
                             'lat': ref['lat'], 
                             'long': ref['long'],
@@ -102,7 +136,7 @@ def compute_time_matrix(transport_mode, distance_matrix):
                 break
 
             i = solution.Value(routing.NextVar(i))
-
+   
         total_travel_time += day_plan[-1]['travel_time'] - day_plan[0]['travel_time']
         plan.append(day_plan)
 
@@ -153,12 +187,20 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     locations_for_distance_matrix = []
     time_windows = []
     reference_list = []
-    num_optional = len(optional)
-
-    if len(optional) > 20:
-        optional= optional[:5]
-        num_optional = len(optional)
+    
     locations = required + optional # all locations
+    total_num_locations = len(locations)
+    num_loc_per_day = total_num_locations / days_traveled
+
+    # Truncates locations if it seems excessive per day
+    if num_loc_per_day > TRANSPORT_DAILY_LOC_LIMITS[transport_mode]:
+        dif = num_loc_per_day - TRANSPORT_DAILY_LOC_LIMITS[transport_mode]
+        num_locs_dif = round(dif * days_traveled)
+        total_num_locations -= num_locs_dif
+        locations = locations[:total_num_locations]
+
+    if len(locations) < len(required):
+        locations = required
 
     for _, name, latitude, longitude, open_time, close_time, visit_time in locations:
         locations_for_distance_matrix.append((latitude, longitude))
@@ -199,7 +241,6 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     )
     time_dimension = routing.GetDimensionOrDie("Time")
 
-
     # Add time window constraints for each location except depot
     for location_i, time_window in enumerate(data["time_windows"]):
         if location_i != data["depot"]:
@@ -231,9 +272,8 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
 
     if optional:
         total_travel_time_minus_depot = 0
-
         for node_distances in data["time_matrix"][1:]: # skips hotel
-            total_travel_time_minus_depot += (sum(node_distances) - node_distances[0])
+            total_travel_time_minus_depot += (sum(node_distances) - node_distances[0]) # skips hotel
 
         total_travel_time_minus_depot = int(total_travel_time_minus_depot/2)
 
@@ -249,7 +289,7 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
 
         else:
             # Allow node dropping for locations that are optional - set penalty to be greater than sum of all distances not going to depot
-            for node_idx in range(num_optional-1, len(locations)):
+            for node_idx in range(len(optional)-1, len(locations)):
                 routing.AddDisjunction([manager.NodeToIndex(node_idx)], penalty)
 
     # Instantiate route start and end times to produce feasible times
@@ -270,6 +310,7 @@ def router(required, optional, ranking_considered, transport_mode, days_traveled
     
     # Print solution on console.
     if solution:
+        print_solution(data, manager, routing, solution)
         return return_solution(data, manager, routing, solution, reference_list)
     return [], 0, 0, 0
 
