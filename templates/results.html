@@ -25,19 +25,32 @@ style %}main.css{% endset %} {% block body %}
     <div class="one-result" id="route_{{loop.index}}">
       <h3>Day {{loop.index}}:</h3>
       <div class="maps"></div>
-      {% for place in route[:route|length - 1] %}
+      <div class="description">
+      {% if route|length == 2 %}
+      <span id="{{route[0]['name']}}${{route[0]['lat']}}${{route[0]['long']}}">Stay at hotel ({{route[0]['name']}})</span>
+      <span id="{{route[1]['name']}}${{route[1]['lat']}}${{route[1]['long']}}"></span>
+      {% else %}
+      <span
+        id="{{route[0]['name']}}${{route[0]['lat']}}${{route[0]['long']}}"
+      >
+        Head out from {{ route[0]['name'] }} ->
+      </span>
+      {% for place in route[1:route|length - 1] %}
       <span id="{{place['name']}}${{place['lat']}}${{place['long']}}">
-        {{place['name']}} for {{place['visit_time']}} minutes ->
+        {{place['name']}} (visit: {{place['visit_time']}} minutes) ->
       </span>
       {% endfor %}
       <span
         id="{{route[route|length - 1]['name']}}${{route[route|length - 1]['lat']}}${{route[route|length - 1]['long']}}"
       >
-        {{ route[route|length - 1]['name'] }} for {{route[route|length -
-        1]['visit_time']}} minutes
+        {{ route[route|length - 1]['name'] }} for rest of the night
       </span>
+      {% endif %}
+    </div>
     </div>
     {% endfor %}
+
+   
   </div>
   {% endif %}
   <script
