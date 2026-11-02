@@ -12,7 +12,7 @@ load-dotenv==0.1.0
 MarkupSafe==2.1.5
 python-dotenv==1.0.1
 requests==2.31.0
-urllib3==2.2.1
-Werkzeug==3.0.2
+urllib3==2.8.0
+Werkzeug==3.0.6
 zipp==3.18.1
 ortools==9.9.3963
